@@ -1,0 +1,113 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deepcompress"
+version = "1.0.0"
+description = "Production-ready document compression library reducing LLM costs by 96% with DeepSeek-OCR integration"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Organization", email = "engineering@yourorg.com"}
+]
+keywords = ["document-processing", "ocr", "llm", "compression", "rag", "deepseek", "financial-services"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: General",
+]
+
+dependencies = [
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "aiofiles>=23.2.0",
+    "httpx>=0.25.0",
+    "redis>=5.0.0",
+    "prometheus-client>=0.19.0",
+    "python-dotenv>=1.0.0",
+    "tenacity>=8.2.0",
+    "cryptography>=41.0.0",
+    "orjson>=3.9.0",
+]
+
+[project.optional-dependencies]
+gpu = [
+    "torch>=2.1.0",
+    "transformers>=4.35.0",
+    "pillow>=10.0.0",
+    "pdf2image>=1.17.0",
+    "accelerate>=0.25.0",
+]
+aws = [
+    "boto3>=1.34.0",
+    "aioboto3>=12.3.0",
+]
+vector-db = [
+    "pinecone-client>=3.0.0",
+    "weaviate-client>=4.4.0",
+]
+llm = [
+    "openai>=1.6.0",
+    "anthropic>=0.8.0",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+    "black>=23.12.0",
+    "ruff>=0.1.8",
+    "mypy>=1.7.0",
+    "pre-commit>=3.6.0",
+]
+all = [
+    "deepcompress[gpu,aws,vector-db,llm,dev]",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/deepcompress"
+Documentation = "https://deepcompress.readthedocs.io"
+Repository = "https://github.com/your-org/deepcompress"
+Changelog = "https://github.com/your-org/deepcompress/blob/main/CHANGELOG.md"
+
+[project.scripts]
+deepcompress-worker = "deepcompress.worker:main"
+deepcompress-calculate-savings = "deepcompress.cli:calculate_savings_cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["deepcompress*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "I", "N", "W", "UP", "B", "A", "C4", "DTZ", "PIE", "PT", "RET", "SIM"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--cov=deepcompress --cov-report=html --cov-report=term-missing"
+

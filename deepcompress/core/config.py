@@ -1,0 +1,229 @@
+"""
+Configuration management for DeepCompress.
+"""
+
+from typing import Literal
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class DeepCompressConfig(BaseSettings):
+    """
+    Centralized configuration for DeepCompress.
+
+    Loads configuration from environment variables with DEEPCOMPRESS_ prefix.
+    """
+
+    model_config = SettingsConfigDict(
+        env_prefix="",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+    # OCR Configuration
+    ocr_model: str = Field(
+        default="deepseek-ai/DeepSeek-OCR",
+        description="DeepSeek-OCR model identifier",
+    )
+    ocr_mode: Literal["small", "base", "large"] = Field(
+        default="small",
+        description="OCR mode (small=100 tokens, base=200, large=400)",
+    )
+    ocr_device: str = Field(
+        default="cuda:0",
+        description="Device for OCR processing (cuda:0, cuda:1, cpu)",
+    )
+    ocr_batch_size: int = Field(
+        default=8,
+        ge=1,
+        le=64,
+        description="Batch size for OCR processing",
+    )
+    ocr_max_workers: int = Field(
+        default=2,
+        ge=1,
+        le=16,
+        description="Maximum OCR worker processes",
+    )
+
+    # Cache Configuration
+    cache_url: str = Field(
+        default="redis://localhost:6379",
+        description="Redis cache URL",
+    )
+    cache_ttl: int = Field(
+        default=86400,
+        ge=0,
+        description="Cache TTL in seconds (default: 24 hours)",
+    )
+    cache_enabled: bool = Field(
+        default=True,
+        description="Whether to enable caching",
+    )
+
+    # Vector Database Configuration
+    vector_db_provider: Literal["pinecone", "weaviate", "none"] = Field(
+        default="pinecone",
+        description="Vector database provider",
+    )
+    vector_db_api_key: str = Field(
+        default="",
+        description="Vector database API key",
+    )
+    vector_db_environment: str = Field(
+        default="us-east-1-aws",
+        description="Vector database environment/region",
+    )
+    vector_db_index_name: str = Field(
+        default="edc-documents",
+        description="Vector database index name",
+    )
+
+    # LLM Configuration
+    llm_provider: Literal["openai", "claude", "llama"] = Field(
+        default="openai",
+        description="LLM provider",
+    )
+    llm_api_key: str = Field(
+        default="",
+        description="LLM API key",
+    )
+    llm_model: str = Field(
+        default="gpt-4o",
+        description="LLM model identifier",
+    )
+    llm_max_tokens: int = Field(
+        default=4096,
+        ge=1,
+        description="Maximum tokens for LLM generation",
+    )
+    llm_temperature: float = Field(
+        default=0.1,
+        ge=0.0,
+        le=2.0,
+        description="LLM temperature",
+    )
+
+    # AWS Configuration
+    aws_access_key_id: str = Field(
+        default="",
+        description="AWS access key ID",
+    )
+    aws_secret_access_key: str = Field(
+        default="",
+        description="AWS secret access key",
+    )
+    aws_region: str = Field(
+        default="us-east-1",
+        description="AWS region",
+    )
+    aws_s3_bucket: str = Field(
+        default="",
+        description="S3 bucket for document storage",
+    )
+
+    # Security Configuration
+    pii_scrubbing: bool = Field(
+        default=True,
+        description="Enable PII scrubbing",
+    )
+    encryption_key: str = Field(
+        default="",
+        description="Fernet encryption key for cache",
+    )
+
+    # Processing Configuration
+    max_pages_per_document: int = Field(
+        default=1000,
+        ge=1,
+        description="Maximum pages per document",
+    )
+    processing_timeout: int = Field(
+        default=300,
+        ge=1,
+        description="Processing timeout in seconds",
+    )
+    retry_attempts: int = Field(
+        default=3,
+        ge=0,
+        description="Number of retry attempts for API calls",
+    )
+    retry_delay: float = Field(
+        default=1.0,
+        ge=0,
+        description="Delay between retries in seconds",
+    )
+
+    # Monitoring Configuration
+    prometheus_port: int = Field(
+        default=9090,
+        ge=1024,
+        le=65535,
+        description="Prometheus metrics port",
+    )
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
+        default="INFO",
+        description="Logging level",
+    )
+    structured_logging: bool = Field(
+        default=True,
+        description="Enable structured JSON logging",
+    )
+
+    # Performance Configuration
+    gpu_memory_fraction: float = Field(
+        default=0.9,
+        ge=0.1,
+        le=1.0,
+        description="Fraction of GPU memory to use",
+    )
+    use_bfloat16: bool = Field(
+        default=True,
+        description="Use bfloat16 precision",
+    )
+    enable_flash_attention: bool = Field(
+        default=True,
+        description="Enable Flash Attention optimization",
+    )
+
+    def validate_config(self) -> None:
+        """Validate configuration and raise errors for invalid settings."""
+        from deepcompress.exceptions import ConfigurationError
+
+        if self.cache_enabled and not self.cache_url:
+            raise ConfigurationError("cache_url required when cache_enabled=True")
+
+        if self.vector_db_provider != "none" and not self.vector_db_api_key:
+            raise ConfigurationError(
+                f"vector_db_api_key required for provider={self.vector_db_provider}"
+            )
+
+        if not self.llm_api_key:
+            raise ConfigurationError("llm_api_key required")
+
+        if self.ocr_device.startswith("cuda"):
+            try:
+                import torch
+
+                if not torch.cuda.is_available():
+                    raise ConfigurationError("CUDA not available but ocr_device=cuda")
+            except ImportError:
+                raise ConfigurationError("torch not installed but ocr_device=cuda")
+
+    @property
+    def tokens_per_page_by_mode(self) -> dict[str, int]:
+        """Get token counts per page for each OCR mode."""
+        return {
+            "small": 100,
+            "base": 200,
+            "large": 400,
+        }
+
+    @property
+    def vision_tokens_per_page(self) -> int:
+        """Get vision tokens per page for current OCR mode."""
+        return self.tokens_per_page_by_mode[self.ocr_mode]
+
