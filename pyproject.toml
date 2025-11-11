@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deepcompress"
-version = "1.0.0"
+version = "1.3.0"
 description = "Production-ready document compression library reducing LLM costs by 96% with DeepSeek-OCR integration"
 readme = "README.md"
-requires-python = ">=3.11"
-license = {text = "MIT"}
+requires-python = ">=3.9"
+license = "MIT"
 authors = [
     {name = "Your Organization", email = "engineering@yourorg.com"}
 ]
@@ -17,7 +17,8 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Financial and Insurance Industry",
-    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -25,37 +26,52 @@ classifiers = [
 ]
 
 dependencies = [
-    "pydantic>=2.5.0",
-    "pydantic-settings>=2.1.0",
-    "aiofiles>=23.2.0",
-    "httpx>=0.25.0",
-    "redis>=5.0.0",
-    "prometheus-client>=0.19.0",
-    "python-dotenv>=1.0.0",
-    "tenacity>=8.2.0",
-    "cryptography>=41.0.0",
-    "orjson>=3.9.0",
+    "pydantic>=2.5.0,<3.0.0",  # Prevent v3 breaking changes
+    "pydantic-settings>=2.1.0,<3.0.0",
+    "aiofiles>=23.2.0,<24.0.0",
+    "httpx>=0.25.0,<1.0.0",  # Flexible range to avoid conflicts
+    "redis>=5.0.0,<6.0.0",  # Prevent major version breaks
+    "prometheus-client>=0.19.0,<1.0.0",
+    "python-dotenv>=1.0.0,<2.0.0",
+    "tenacity>=8.2.0,<9.0.0",
+    "cryptography>=41.0.0,<44.0.0",  # Security-sensitive, conservative upper bound
+    "orjson>=3.9.0,<4.0.0",
 ]
 
 [project.optional-dependencies]
 gpu = [
-    "torch>=2.1.0",
-    "transformers>=4.35.0",
+    "torch>=2.0.0,<3.0.0",  # Support torch 2.x including 2.8.0+
+    "transformers>=4.38.0,<5.0.0",  # Flexible range for compatibility
+    "tokenizers>=0.19.0,<1.0.0",  # Flexible range
     "pillow>=10.0.0",
     "pdf2image>=1.17.0",
-    "accelerate>=0.25.0",
+    "accelerate>=0.20.0",
+    "sentencepiece>=0.1.99",
+]
+colab = [
+    # Lightweight extra for Google Colab (uses pre-installed torch/transformers)
+    "tokenizers>=0.19.0,<1.0.0",
+    "pillow>=10.0.0",
+    "pdf2image>=1.17.0",
+    "accelerate>=0.20.0",
+    "sentencepiece>=0.1.99",
+]
+gpu-flash = [
+    # Full GPU support with flash-attention (requires compilation)
+    "deepcompress[gpu]",
+    "flash-attn>=2.3.0,<2.8.0; platform_machine == 'x86_64'",
 ]
 aws = [
-    "boto3>=1.34.0",
-    "aioboto3>=12.3.0",
+    "boto3>=1.34.0,<2.0.0",  # Stable v1 API
+    "aioboto3>=12.3.0,<13.0.0",
 ]
 vector-db = [
-    "pinecone-client>=3.0.0",
-    "weaviate-client>=4.4.0",
+    "pinecone-client>=3.0.0,<4.0.0",  # Prevent major version breaks
+    "weaviate-client>=4.4.0,<5.0.0",
 ]
 llm = [
-    "openai>=1.6.0",
-    "anthropic>=0.8.0",
+    "openai>=1.6.0,<2.0.0",  # Stable v1 API
+    "anthropic>=0.8.0,<1.0.0",  # Prevent v1 breaking changes
 ]
 dev = [
     "pytest>=7.4.0",
@@ -69,6 +85,9 @@ dev = [
 ]
 all = [
     "deepcompress[gpu,aws,vector-db,llm,dev]",
+]
+all-flash = [
+    "deepcompress[gpu-flash,aws,vector-db,llm,dev]",
 ]
 
 [project.urls]
@@ -87,12 +106,12 @@ include = ["deepcompress*"]
 
 [tool.black]
 line-length = 100
-target-version = ["py311"]
+target-version = ["py39", "py310", "py311", "py312"]
 include = '\.pyi?$'
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py39"
 select = ["E", "F", "I", "N", "W", "UP", "B", "A", "C4", "DTZ", "PIE", "PT", "RET", "SIM"]
 ignore = ["E501"]
 

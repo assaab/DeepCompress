@@ -63,7 +63,7 @@ class VectorDBClient:
 
         except ImportError:
             raise VectorDBError(
-                "Pinecone not installed. Install with: pip install edc[vector-db]"
+                "Pinecone not installed. Install with: pip install deepcompress[vector-db]"
             )
 
     async def _init_weaviate(self) -> None:
@@ -80,7 +80,7 @@ class VectorDBClient:
 
         except ImportError:
             raise VectorDBError(
-                "Weaviate not installed. Install with: pip install edc[vector-db]"
+                "Weaviate not installed. Install with: pip install deepcompress[vector-db]"
             )
 
     @retry(

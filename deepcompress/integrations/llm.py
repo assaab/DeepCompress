@@ -50,7 +50,7 @@ class LLMClient:
             self._client = AsyncOpenAI(api_key=self.config.llm_api_key)
         except ImportError:
             raise LLMError(
-                "OpenAI not installed. Install with: pip install edc[llm]"
+                "OpenAI not installed. Install with: pip install deepcompress[llm]"
             )
 
     async def _init_claude(self) -> None:
@@ -61,7 +61,7 @@ class LLMClient:
             self._client = AsyncAnthropic(api_key=self.config.llm_api_key)
         except ImportError:
             raise LLMError(
-                "Anthropic not installed. Install with: pip install edc[llm]"
+                "Anthropic not installed. Install with: pip install deepcompress[llm]"
             )
 
     async def _init_llama(self) -> None:

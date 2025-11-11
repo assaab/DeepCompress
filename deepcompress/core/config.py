@@ -28,6 +28,10 @@ class DeepCompressConfig(BaseSettings):
         default="deepseek-ai/DeepSeek-OCR",
         description="DeepSeek-OCR model identifier",
     )
+    ocr_model_revision: str = Field(
+        default="main",
+        description="Model revision/commit hash to pin for security and stability",
+    )
     ocr_mode: Literal["small", "base", "large"] = Field(
         default="small",
         description="OCR mode (small=100 tokens, base=200, large=400)",
@@ -40,13 +44,35 @@ class DeepCompressConfig(BaseSettings):
         default=8,
         ge=1,
         le=64,
-        description="Batch size for OCR processing",
+        description="Number of pages to process concurrently in each batch (higher = faster but more memory)",
     )
     ocr_max_workers: int = Field(
         default=2,
         ge=1,
         le=16,
         description="Maximum OCR worker processes",
+    )
+    ocr_engine: str = Field(
+        default="deepseek",
+        description="OCR engine (ignored, for compatibility only - always uses DeepSeek-OCR)",
+    )
+    ocr_max_new_tokens: int = Field(
+        default=2048,
+        ge=128,
+        le=8192,
+        description="Maximum new tokens to generate per page during OCR",
+    )
+    ocr_temperature: float = Field(
+        default=0.1,
+        ge=0.0,
+        le=2.0,
+        description="Temperature for OCR text generation",
+    )
+    ocr_repetition_penalty: float = Field(
+        default=1.2,
+        ge=1.0,
+        le=2.0,
+        description="Repetition penalty for OCR generation (prevents repetitive text)",
     )
 
     # Cache Configuration
@@ -60,7 +86,7 @@ class DeepCompressConfig(BaseSettings):
         description="Cache TTL in seconds (default: 24 hours)",
     )
     cache_enabled: bool = Field(
-        default=True,
+        default=False,
         description="Whether to enable caching",
     )
 
@@ -89,7 +115,7 @@ class DeepCompressConfig(BaseSettings):
     )
     llm_api_key: str = Field(
         default="",
-        description="LLM API key",
+        description="LLM API key (optional for compression-only operations)",
     )
     llm_model: str = Field(
         default="gpt-4o",
@@ -172,6 +198,14 @@ class DeepCompressConfig(BaseSettings):
         default=True,
         description="Enable structured JSON logging",
     )
+    enable_performance_logging: bool = Field(
+        default=True,
+        description="Enable detailed performance logging for profiling",
+    )
+    suppress_model_warnings: bool = Field(
+        default=True,
+        description="Suppress non-critical model warnings for cleaner output",
+    )
 
     # Performance Configuration
     gpu_memory_fraction: float = Field(
@@ -201,15 +235,19 @@ class DeepCompressConfig(BaseSettings):
                 f"vector_db_api_key required for provider={self.vector_db_provider}"
             )
 
-        if not self.llm_api_key:
-            raise ConfigurationError("llm_api_key required")
+        # llm_api_key is now optional - only required when actually using LLM functionality
+        # For compression-only operations (compressor.compress()), it's not needed
 
+        # Only validate CUDA if using cuda device
         if self.ocr_device.startswith("cuda"):
             try:
                 import torch
 
                 if not torch.cuda.is_available():
-                    raise ConfigurationError("CUDA not available but ocr_device=cuda")
+                    # Warn but don't fail - will fall back to CPU
+                    import warnings
+                    warnings.warn("CUDA not available, will use CPU instead")
+                    self.ocr_device = "cpu"
             except ImportError:
                 raise ConfigurationError("torch not installed but ocr_device=cuda")
 

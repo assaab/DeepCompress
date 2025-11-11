@@ -1,11 +1,13 @@
 """
-Structured logging utilities.
+Structured logging utilities with performance tracking and diagnostics.
 """
 
 import logging
 import sys
+import time
 import uuid
-from typing import Any
+from typing import Any, Dict
+from contextlib import contextmanager
 
 import orjson
 
@@ -82,6 +84,71 @@ class StructuredLogger:
         from datetime import datetime
 
         return datetime.utcnow().isoformat() + "Z"
+    
+    @contextmanager
+    def performance_context(self, operation: str, **kwargs: Any):
+        """
+        Context manager for tracking operation performance.
+        
+        Args:
+            operation: Name of the operation being tracked
+            **kwargs: Additional context to log
+            
+        Example:
+            >>> with logger.performance_context("ocr_extraction", page=1):
+            >>>     # perform OCR
+            >>>     pass
+        """
+        start_time = time.time()
+        self.debug(f"Starting {operation}", operation=operation, **kwargs)
+        
+        try:
+            yield
+            duration_ms = (time.time() - start_time) * 1000
+            self.info(
+                f"Completed {operation}",
+                operation=operation,
+                duration_ms=duration_ms,
+                status="success",
+                **kwargs
+            )
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            self.error(
+                f"Failed {operation}",
+                operation=operation,
+                duration_ms=duration_ms,
+                status="failed",
+                error=str(e),
+                error_type=type(e).__name__,
+                **kwargs
+            )
+            raise
+    
+    def log_system_info(self):
+        """Log system information for diagnostics."""
+        import platform
+        import sys
+        
+        system_info = {
+            "platform": platform.platform(),
+            "python_version": sys.version,
+            "machine": platform.machine(),
+            "processor": platform.processor(),
+        }
+        
+        try:
+            import torch
+            system_info["torch_version"] = torch.__version__
+            system_info["cuda_available"] = torch.cuda.is_available()
+            if torch.cuda.is_available():
+                system_info["cuda_version"] = torch.version.cuda
+                system_info["cuda_device_count"] = torch.cuda.device_count()
+                system_info["cuda_device_name"] = torch.cuda.get_device_name(0)
+        except ImportError:
+            system_info["torch_available"] = False
+        
+        self.info("System information", **system_info)
 
 
 def setup_logging(
@@ -122,4 +189,57 @@ def get_logger(name: str, level: str = "INFO") -> StructuredLogger:
         StructuredLogger instance
     """
     return StructuredLogger(name, level)
+
+
+def setup_model_warning_suppression(suppress: bool = True) -> None:
+    """
+    Setup comprehensive warning suppression for model-related warnings.
+    
+    Args:
+        suppress: Whether to suppress warnings (True) or show them (False)
+    """
+    import warnings
+    
+    if suppress:
+        # Suppress common transformer/model warnings
+        warnings.filterwarnings("ignore", category=UserWarning)
+        warnings.filterwarnings("ignore", category=FutureWarning)
+        warnings.filterwarnings("ignore", message=".*model of type.*not supported.*")
+        warnings.filterwarnings("ignore", message=".*deepseek_vl_v2.*DeepseekOCR.*")
+        warnings.filterwarnings("ignore", message=".*not initialized from the model checkpoint.*")
+        warnings.filterwarnings("ignore", message=".*do_sample.*temperature.*")
+        warnings.filterwarnings("ignore", message=".*attention mask.*")
+        warnings.filterwarnings("ignore", message=".*pad token.*")
+        warnings.filterwarnings("ignore", message=".*Flash Attention.*")
+        warnings.filterwarnings("ignore", message=".*past_key_value.*deprecated.*")
+        warnings.filterwarnings("ignore", message=".*seen_tokens.*deprecated.*")
+        warnings.filterwarnings("ignore", message=".*get_max_cache.*deprecated.*")
+        warnings.filterwarnings("ignore", message=".*cache_position.*")
+        
+        # Suppress specific library warnings
+        try:
+            import transformers
+            transformers.logging.set_verbosity_error()
+        except:
+            pass
+        
+        try:
+            import torch
+            torch.set_warn_always(False)
+        except:
+            pass
+    else:
+        # Reset warnings to default
+        warnings.resetwarnings()
+
+
+def log_performance_metrics(logger: StructuredLogger, metrics: Dict[str, Any]) -> None:
+    """
+    Log performance metrics in a structured format.
+    
+    Args:
+        logger: StructuredLogger instance
+        metrics: Dictionary of metrics to log
+    """
+    logger.info("Performance metrics", **metrics)
 

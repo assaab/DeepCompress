@@ -8,7 +8,7 @@
 
 > **Reduce LLM document processing costs by 96%** while improving accuracy and latency.
 
-A production-ready Python library that compresses documents from **5,000 tokens/page → 80 tokens/page** using DeepSeek-OCR vision compression and D-TOON optimization. Process 250,000 pages/month for **$4,820** instead of $12,500.
+A Python library that compresses documents from **5,000 tokens/page → 80 tokens/page** using DeepSeek-OCR vision compression and D-TOON optimization. Process 250,000 pages/month for **$4,820** instead of $12,500.
 
 ---
 
@@ -242,6 +242,62 @@ savings = calculate_savings(
 print(f"Monthly savings: ${savings['monthly_savings']:,.2f}")
 print(f"Payback period: {savings['payback_months']:.1f} months")
 print(f"3-year ROI: {savings['three_year_roi_percent']:.0f}%")
+```
+
+---
+
+## 🔧 Troubleshooting
+
+### ImportError: cannot import name 'LlamaFlashAttention2'
+
+This error indicates an incompatible version of the transformers library. Fix it by upgrading:
+
+```bash
+pip install --upgrade transformers>=4.36.0
+```
+
+Or reinstall GPU dependencies:
+
+```bash
+pip uninstall transformers torch
+pip install deepcompress[gpu] --upgrade
+```
+
+### GPU Out of Memory
+
+Reduce memory usage by adjusting configuration:
+
+```python
+config = DeepCompressConfig(
+    ocr_mode="small",  # Use smaller mode (100 tokens vs 400)
+    gpu_memory_fraction=0.8,  # Limit GPU memory usage
+    ocr_batch_size=4,  # Reduce batch size
+)
+```
+
+### Flash Attention Not Available
+
+Flash Attention provides 2-3x speedup but is optional. If installation fails:
+
+```bash
+# Install manually (requires CUDA and compatible GPU)
+pip install flash-attn --no-build-isolation
+
+# Or continue without it - the library will automatically fall back
+```
+
+### PDF Processing Errors
+
+Ensure pdf2image dependencies are installed:
+
+```bash
+# Ubuntu/Debian
+sudo apt-get install poppler-utils
+
+# macOS
+brew install poppler
+
+# Windows - download from: https://github.com/oschwartz10612/poppler-windows/releases/
 ```
 
 ---

@@ -5,6 +5,19 @@ All notable changes to DeepCompress will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2024-11-07
+
+### Fixed
+- Fixed `ImportError: cannot import name 'LlamaFlashAttention2'` by updating transformers version requirement to >=4.36.0
+- Added flash-attn as optional GPU dependency for 2-3x speedup with automatic fallback if unavailable
+- Added graceful fallback when Flash Attention 2 is not available
+- Fixed inconsistent package name references (edc → deepcompress) in error messages across all modules
+- Improved error messages with specific upgrade instructions for transformers compatibility issues
+
+### Added
+- Troubleshooting section in README with common issues and solutions
+- Better error handling for GPU-related import errors with actionable error messages
+
 ## [1.0.0] - 2024-11-07
 
 ### Added

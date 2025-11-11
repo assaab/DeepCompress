@@ -14,6 +14,8 @@ Example:
     >>> print(result.answer)
 """
 
+from typing import Optional
+
 from deepcompress.core.compressor import DocumentCompressor
 from deepcompress.core.config import DeepCompressConfig
 from deepcompress.exceptions import (
@@ -30,7 +32,7 @@ from deepcompress.models.response import CompressionResult
 from deepcompress.processing.batch import BatchProcessor
 from deepcompress.utils.cost import calculate_savings
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "Your Organization"
 __license__ = "MIT"
 
@@ -66,7 +68,7 @@ async def compress_and_analyze(
     llm: str = "openai",
     cache: bool = True,
     scrub_pii: bool = True,
-    config: DeepCompressConfig  or None = None,
+    config: Optional[DeepCompressConfig] = None,
 ) -> CompressionResult:
     """
     One-liner API for document compression and LLM analysis.
