@@ -3,7 +3,6 @@
 [![PyPI Version](https://img.shields.io/pypi/v/deepcompress)](https://pypi.org/project/deepcompress/)
 [![Python Version](https://img.shields.io/pypi/pyversions/deepcompress)](https://pypi.org/project/deepcompress/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Downloads](https://img.shields.io/pypi/dm/deepcompress)](https://pypi.org/project/deepcompress/)
 [![Status](https://img.shields.io/pypi/status/deepcompress)](https://pypi.org/project/deepcompress/)
 
 > **Reduce LLM document processing costs by 96%** while improving accuracy and latency.
