@@ -41,6 +41,7 @@ class OCRExtractor:
             from transformers import AutoModel, AutoTokenizer
             import warnings
             import logging
+            import os
             from deepcompress.utils.logging import setup_model_warning_suppression
             
             logger = logging.getLogger(__name__)
@@ -53,6 +54,9 @@ class OCRExtractor:
             if self.config.suppress_model_warnings:
                 setup_model_warning_suppression(suppress=True)
                 logger.debug("Model warnings suppression enabled")
+            
+            # Disable tqdm globally for this process
+            os.environ['TQDM_DISABLE'] = '1'
             
             # Apply compatibility patch for newer transformers versions
             logger.info("Applying transformers compatibility patches...")
@@ -284,10 +288,12 @@ class OCRExtractor:
         batch_size = self.config.ocr_batch_size
         total_pages = len(images)
         
-        logger.info(f"Processing {total_pages} pages in batches of {batch_size}")
+        logger.info(f"Processing {total_pages} pages sequentially (to avoid output mixing)")
         
         all_pages = []
-        total_batch_count = (total_pages + batch_size - 1) // batch_size
+        
+        # Add progress logging
+        logger.info(f"Starting OCR extraction: {total_pages} pages")
         
         try:
             # Import tqdm for progress tracking (optional)
@@ -297,60 +303,83 @@ class OCRExtractor:
             use_progress_bar = False
             logger.debug("tqdm not available, progress bar disabled")
         
-        # Setup progress bar
+        # Setup progress bar with explicit file output to stdout
+        pbar = None
         if use_progress_bar:
-            pbar = tqdm(total=total_pages, desc="Processing pages", unit="page")
+            import sys
+            pbar = tqdm(
+                total=total_pages,
+                desc="OCR Processing",
+                unit=" page",
+                position=0,
+                leave=True,
+                file=sys.stdout,
+                ncols=80
+            )
+        
+        # Track skipped pages
+        skipped_pages = []
         
         try:
-            # Process images in batches
-            for batch_idx, batch_start in enumerate(range(0, total_pages, batch_size)):
-                batch_end = min(batch_start + batch_size, total_pages)
-                batch_images = images[batch_start:batch_end]
-                batch_numbers = range(batch_start + 1, batch_end + 1)
-                batch_num = batch_idx + 1
+            # Process pages sequentially to avoid output mixing
+            # Each page processes independently with isolated stdout/stderr
+            for page_idx, (image, page_num) in enumerate(zip(images, range(1, total_pages + 1)), 1):
+                logger.info(f"Processing page {page_num}/{total_pages}...")
                 
-                logger.debug(f"Processing batch {batch_num}/{total_batch_count}: "
-                           f"pages {batch_start + 1}-{batch_end} of {total_pages}")
-                
-                # Create async tasks for all pages in this batch
-                tasks = [
-                    self._extract_page(image, page_num)
-                    for image, page_num in zip(batch_images, batch_numbers)
-                ]
-                
-                # Execute batch concurrently
-                batch_start_time = time.time()
-                batch_pages = await asyncio.gather(*tasks, return_exceptions=True)
-                batch_time = time.time() - batch_start_time
-                
-                # Check for errors in batch
-                for i, result in enumerate(batch_pages):
-                    if isinstance(result, Exception):
-                        page_num = batch_start + i + 1
-                        logger.error(f"Failed to process page {page_num}: {result}")
-                        if use_progress_bar:
+                try:
+                    # Process page (async but sequential execution)
+                    page_result = await self._extract_page(image, page_num)
+                    all_pages.append(page_result)
+                    
+                    # Update progress bar
+                    if pbar is not None:
+                        pbar.update(1)
+                        pbar.refresh()
+                    
+                    logger.info(f"✓ Page {page_num}/{total_pages} completed")
+                    
+                except Exception as e:
+                    # Check if we should skip failed pages or raise error
+                    if self.config.ocr_skip_failed_pages:
+                        # Skip this page and continue processing
+                        logger.warning(f"⚠ Skipping page {page_num} after multiple failed attempts: {e}")
+                        skipped_pages.append(page_num)
+                        
+                        # Update progress bar to show we're moving on
+                        if pbar is not None:
+                            pbar.update(1)
+                            pbar.refresh()
+                        
+                        # Continue processing remaining pages
+                        continue
+                    else:
+                        # Original behavior: raise error and stop processing
+                        logger.error(f"Failed to process page {page_num}: {e}")
+                        if pbar is not None:
                             pbar.close()
                         raise OCRError(
                             f"Failed to extract page {page_num}",
-                            details={"error": str(result)},
+                            details={"error": str(e)},
                         )
-                
-                all_pages.extend(batch_pages)
-                
-                # Update progress bar
-                if use_progress_bar:
-                    pbar.update(len(batch_pages))
-                
-                pages_per_sec = len(batch_pages) / batch_time if batch_time > 0 else 0
-                logger.info(f"Batch {batch_num}/{total_batch_count} complete: "
-                           f"{len(batch_pages)} pages in {batch_time:.2f}s "
-                           f"({pages_per_sec:.2f} pages/s)")
         
         finally:
-            if use_progress_bar:
+            if pbar is not None:
                 pbar.close()
         
-        logger.info(f"All {total_pages} pages processed successfully")
+        # Log summary of processing
+        if skipped_pages:
+            logger.warning(f"⚠ Processing completed with {len(skipped_pages)} page(s) skipped: {skipped_pages}")
+            logger.info(f"✓ Successfully processed {len(all_pages)}/{total_pages} pages")
+        else:
+            logger.info(f"✓ All {total_pages} pages processed successfully")
+        
+        # If all pages failed, raise an error
+        if not all_pages:
+            raise OCRError(
+                f"Failed to extract any pages from document (all {total_pages} pages failed)",
+                details={"skipped_pages": skipped_pages},
+            )
+        
         return all_pages
     
     async def _load_images(self, file_path: str) -> list[Any]:
@@ -415,7 +444,7 @@ class OCRExtractor:
         
         result_text = None
         retry_count = 0
-        max_retries = 2
+        max_retries = self.config.ocr_retry_attempts
         
         try:
             mode_config = {
@@ -431,59 +460,111 @@ class OCRExtractor:
             output_dir = os.path.join(tmp_dir, f'output_page_{page_number}')
             os.makedirs(output_dir, exist_ok=True)
             
-            # Optimized generation parameters with better control
-            generation_kwargs = {
-                "max_new_tokens": self.config.ocr_max_new_tokens,
-                "temperature": self.config.ocr_temperature,
-                "do_sample": True if self.config.ocr_temperature > 0 else False,
-                "repetition_penalty": self.config.ocr_repetition_penalty,
-                "top_p": 0.95,
-                "top_k": 50,
-                "eos_token_id": self._tokenizer.eos_token_id,
-                "pad_token_id": self._tokenizer.pad_token_id,
-            }
-            
             # Retry logic for robust inference
             while retry_count <= max_retries and result_text is None:
                 try:
-                    # Suppress warnings during inference
-                    with warnings.catch_warnings():
-                        warnings.filterwarnings("ignore")
-                        
-                        # Try with full kwargs first
-                        try:
-                            result = self._model.infer(
-                                self._tokenizer,
-                                prompt=prompt,
-                                image_file=tmp_image_path,
-                                output_path=output_dir,
-                                base_size=config["base_size"],
-                                image_size=config["image_size"],
-                                crop_mode=True,
-                                save_results=True,
-                                test_compress=False,
-                                **generation_kwargs,
-                            )
-                        except TypeError as te:
-                            # Fallback: some parameters might not be supported
-                            logger.debug(f"Retry with reduced kwargs: {te}")
-                            result = self._model.infer(
-                                self._tokenizer,
-                                prompt=prompt,
-                                image_file=tmp_image_path,
-                                output_path=output_dir,
-                                base_size=config["base_size"],
-                                image_size=config["image_size"],
-                                crop_mode=True,
-                                save_results=True,
-                                test_compress=False,
-                            )
+                    logger.debug(f"Page {page_number}: Starting inference")
+                    logger.info(f"Processing page {page_number}...")
                     
-                    # Process result
+                    # Suppress model's debug prints BEFORE calling executor
+                    # Do this at Python level to catch all prints
+                    import sys
+                    import os
+                    from io import StringIO
+                    
+                    # Create a wrapper function that captures stdout AND suppresses it
+                    captured_output = []
+                    
+                    def run_inference_with_suppression():
+                        import sys
+                        import os
+                        from io import StringIO
+                        
+                        # Capture stdout/stderr
+                        old_stdout = sys.stdout
+                        old_stderr = sys.stderr
+                        stdout_capture = StringIO()
+                        stderr_capture = StringIO()
+                        
+                        # Redirect stdout/stderr at file descriptor level too
+                        original_stdout_fd = os.dup(1)
+                        original_stderr_fd = os.dup(2)
+                        devnull_fd = os.open(os.devnull, os.O_WRONLY)
+                        
+                        try:
+                            # Set Python-level stdout/stderr
+                            sys.stdout = stdout_capture
+                            sys.stderr = stderr_capture
+                            
+                            # Also redirect file descriptors (for C-level prints)
+                            os.dup2(devnull_fd, 1)
+                            os.dup2(devnull_fd, 2)
+                            
+                            # Call model inference
+                            result = self._model.infer(
+                                self._tokenizer,
+                                prompt=prompt,
+                                image_file=tmp_image_path,
+                                output_path=output_dir,
+                                base_size=config["base_size"],
+                                image_size=config["image_size"],
+                                crop_mode=True,
+                                save_results=False,
+                                test_compress=False,
+                            )
+                            
+                            # Get captured output
+                            stdout_text = stdout_capture.getvalue()
+                            stderr_text = stderr_capture.getvalue()
+                            
+                            # Store captured output
+                            captured_output.append({
+                                'result': result,
+                                'stdout': stdout_text,
+                                'stderr': stderr_text
+                            })
+                            
+                            return result
+                        finally:
+                            # Restore Python-level stdout/stderr
+                            sys.stdout = old_stdout
+                            sys.stderr = old_stderr
+                            
+                            # Restore file descriptors
+                            os.dup2(original_stdout_fd, 1)
+                            os.dup2(original_stderr_fd, 2)
+                            os.close(original_stdout_fd)
+                            os.close(original_stderr_fd)
+                            os.close(devnull_fd)
+                    
+                    # Call in executor with suppression wrapper
+                    loop = asyncio.get_event_loop()
+                    result = await loop.run_in_executor(None, run_inference_with_suppression)
+                    
+                    # Check captured output for text (model might print instead of return)
+                    captured = captured_output[0] if captured_output else {}
+                    captured_text = captured.get('stdout', '') or captured.get('stderr', '')
+                    
+                    # Use captured text if result is empty but we have captured output
+                    if (not result or (isinstance(result, str) and not result.strip())) and captured_text.strip():
+                        # Extract text from captured output (skip debug lines)
+                        lines = captured_text.split('\n')
+                        text_lines = []
+                        skip_patterns = ['BASE:', 'PATCHES:', 'torch.Size', '=====']
+                        for line in lines:
+                            if not any(pattern in line for pattern in skip_patterns):
+                                if line.strip():
+                                    text_lines.append(line.strip())
+                        if text_lines:
+                            result = '\n'.join(text_lines)
+                            logger.debug(f"Page {page_number}: Extracted text from captured stdout ({len(result)} chars)")
+                    
+                    # Process result - don't print it, just store it
                     if result is not None and isinstance(result, str) and result.strip():
                         result_text = result.strip()
                         logger.debug(f"Page {page_number}: Model returned {len(result_text)} chars directly")
-                        break
+                        logger.info(f"✓ Page {page_number} completed ({len(result_text)} chars)")
+                        break  # Success - exit retry loop
                     
                     # Fallback: check output files only if direct return failed
                     if not result_text:
@@ -492,34 +573,44 @@ class OCRExtractor:
                         
                         if result_text:
                             logger.info(f"Page {page_number}: Extracted {len(result_text)} chars from output file")
-                            break
+                            logger.info(f"✓ Page {page_number} completed ({len(result_text)} chars)")
+                            break  # Success - exit retry loop
+                    
+                    # If we get here, result is empty - retry
+                    if not result_text:
+                        logger.warning(f"Page {page_number}: Empty result on attempt {retry_count + 1}, retrying...")
+                        retry_count += 1
+                        if retry_count <= max_retries:
+                            await asyncio.sleep(0.5 * retry_count)
+                        else:
+                            break  # Exit loop, will raise error below
                     
                 except Exception as infer_error:
                     logger.warning(f"Page {page_number} inference attempt {retry_count + 1} failed: {infer_error}")
                     retry_count += 1
                     
                     if retry_count <= max_retries:
-                        import asyncio
                         await asyncio.sleep(0.5 * retry_count)
                     else:
                         raise
             
-            # Validate result
+            # Validate result and handle empty pages gracefully
             if not result_text or result_text.strip() in ["", "None", "null"]:
-                raise OCRError(
-                    f"OCR extraction returned empty result for page {page_number} after {retry_count + 1} attempts",
-                    details={"page_number": page_number, "attempts": retry_count + 1}
+                logger.warning(
+                    f"Page {page_number}: OCR returned empty result after {retry_count + 1} attempts. "
+                    f"This might be a blank page or contain only non-textual content. Returning empty text for this page."
                 )
+                result_text = ""  # Normalize to empty string
             
-            # Apply hallucination filters
+            # Apply hallucination filters (safe for empty strings)
             result_text = self._filter_prompt_hallucinations(result_text, page_number, logger)
             result_text = self._detect_and_fix_repetitions(result_text, page_number, logger)
             
-            # Final validation
-            if not result_text or len(result_text) < 10:
-                raise OCRError(
-                    f"OCR extraction produced insufficient text for page {page_number}",
-                    details={"page_number": page_number, "text_length": len(result_text) if result_text else 0}
+            # Final validation: check for very short, potentially junk text
+            if result_text and len(result_text) < self.config.min_ocr_text_length:
+                logger.warning(
+                    f"Page {page_number}: OCR produced insufficient text ({len(result_text)} chars). "
+                    f"The content may be unreliable. Min length is {self.config.min_ocr_text_length}."
                 )
             
         except Exception as e:

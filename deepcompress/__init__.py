@@ -32,7 +32,7 @@ from deepcompress.models.response import CompressionResult
 from deepcompress.processing.batch import BatchProcessor
 from deepcompress.utils.cost import calculate_savings
 
-__version__ = "1.0.1"
+__version__ = "1.4.2"
 __author__ = "Your Organization"
 __license__ = "MIT"
 

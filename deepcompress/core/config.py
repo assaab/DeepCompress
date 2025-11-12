@@ -74,6 +74,27 @@ class DeepCompressConfig(BaseSettings):
         le=2.0,
         description="Repetition penalty for OCR generation (prevents repetitive text)",
     )
+    ocr_inference_timeout: int = Field(
+        default=0,
+        ge=0,
+        le=3600,
+        description="Timeout in seconds for OCR inference per page (0=disabled, prevents infinite generation)",
+    )
+    ocr_retry_attempts: int = Field(
+        default=2,
+        ge=0,
+        le=10,
+        description="Number of retry attempts for OCR extraction per page before skipping",
+    )
+    ocr_skip_failed_pages: bool = Field(
+        default=True,
+        description="Skip pages that fail OCR extraction instead of raising an error",
+    )
+    min_ocr_text_length: int = Field(
+        default=10,
+        ge=0,
+        description="Minimum text length for a page to be considered valid post-OCR. Pages with fewer characters will be warned about but not failed.",
+    )
 
     # Cache Configuration
     cache_url: str = Field(
