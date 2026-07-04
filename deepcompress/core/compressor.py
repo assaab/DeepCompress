@@ -8,8 +8,9 @@ from typing import Any
 from deepcompress.core.config import DeepCompressConfig
 from deepcompress.core.extractor import OCRExtractor
 from deepcompress.core.optimizer import DTOONOptimizer
-from deepcompress.exceptions import ProcessingError
+from deepcompress.exceptions import ConfigurationError, ProcessingError
 from deepcompress.models.document import ExtractedDocument
+from deepcompress.utils.token_counter import count_tokens
 
 
 class CompressedDocument:
@@ -38,21 +39,52 @@ class CompressedDocument:
         compressed_tokens: int,
         processing_time_ms: float,
         cache_hit: bool = False,
+        original_tokens_measured: int or None = None,
+        compressed_tokens_measured: int or None = None,
+        compression_ratio_measured: float or None = None,
+        token_counter_provider: str = "openai",
+        token_counter_model: str = "gpt-4o",
+        is_estimated: bool = False,
     ) -> None:
         self.document_id = document_id
         self.extracted = extracted
         self.optimized_text = optimized_text
-        self.original_tokens = original_tokens
-        self.compressed_tokens = compressed_tokens
-        self.compression_ratio = (
-            original_tokens / compressed_tokens if compressed_tokens > 0 else 1.0
+        self.original_tokens_measured = (
+            original_tokens_measured
+            if original_tokens_measured is not None
+            else original_tokens
         )
-        self.tokens_saved = original_tokens - compressed_tokens
+        self.compressed_tokens_measured = (
+            compressed_tokens_measured
+            if compressed_tokens_measured is not None
+            else compressed_tokens
+        )
+        self.compression_ratio_measured = (
+            compression_ratio_measured
+            if compression_ratio_measured is not None
+            else self._calculate_compression_ratio(
+                self.original_tokens_measured,
+                self.compressed_tokens_measured,
+            )
+        )
+        self.token_counter_provider = token_counter_provider
+        self.token_counter_model = token_counter_model
+        self.is_estimated = is_estimated
+
+        # Backward-compatible aliases now use the measured values.
+        self.original_tokens = self.original_tokens_measured
+        self.compressed_tokens = self.compressed_tokens_measured
+        self.compression_ratio = self.compression_ratio_measured
+        self.tokens_saved = self.original_tokens - self.compressed_tokens
         self.cost_saved_usd = self._calculate_cost_saved(
-            original_tokens, compressed_tokens
+            self.original_tokens, self.compressed_tokens
         )
         self.processing_time_ms = processing_time_ms
         self.cache_hit = cache_hit
+
+    def _calculate_compression_ratio(self, original: int, compressed: int) -> float:
+        """Calculate compression ratio with a safe zero-token fallback."""
+        return original / compressed if compressed > 0 else 1.0
 
     def _calculate_cost_saved(self, original: int, compressed: int) -> float:
         """
@@ -133,10 +165,21 @@ class DocumentCompressor:
                 document_id=document_id,
             )
 
-            optimized_text = self.optimizer.optimize(extracted)
+            optimized_text = await self.optimizer.optimize_async(
+                extracted,
+                mode=self.config.dtoon_mode,
+                llm_client=await self._get_dtoon_llm_client(),
+            )
 
-            original_tokens = self._estimate_original_tokens(extracted)
-            compressed_tokens = self.optimizer._estimate_tokens(optimized_text)
+            original_count, compressed_count = self._count_compression_tokens(
+                extracted,
+                optimized_text,
+            )
+            compression_ratio = (
+                original_count.count / compressed_count.count
+                if compressed_count.count > 0
+                else 1.0
+            )
 
             processing_time_ms = (time.time() - start_time) * 1000
 
@@ -144,10 +187,16 @@ class DocumentCompressor:
                 document_id=extracted.document_id,
                 extracted=extracted,
                 optimized_text=optimized_text,
-                original_tokens=original_tokens,
-                compressed_tokens=compressed_tokens,
+                original_tokens=original_count.count,
+                compressed_tokens=compressed_count.count,
                 processing_time_ms=processing_time_ms,
                 cache_hit=False,
+                original_tokens_measured=original_count.count,
+                compressed_tokens_measured=compressed_count.count,
+                compression_ratio_measured=compression_ratio,
+                token_counter_provider=compressed_count.provider,
+                token_counter_model=compressed_count.model,
+                is_estimated=original_count.is_estimated or compressed_count.is_estimated,
             )
 
             if cache_manager:
@@ -155,6 +204,8 @@ class DocumentCompressor:
 
             return result
 
+        except ConfigurationError:
+            raise
         except Exception as e:
             raise ProcessingError(
                 f"Failed to compress document: {file}",
@@ -222,6 +273,58 @@ class DocumentCompressor:
         Assumes ~5000 tokens per page for typical financial documents.
         """
         return document.page_count * 5000
+
+    async def _get_dtoon_llm_client(self) -> Any:
+        """Create an LLM client only for LLM-assisted D-TOON modes."""
+        if self.config.dtoon_mode == "raw":
+            return None
+
+        if self.config.llm_provider == "llama":
+            raise ConfigurationError(
+                "D-TOON structured and rag modes require an API-backed LLM provider"
+            )
+
+        if not self.config.llm_api_key:
+            raise ConfigurationError(
+                f"D-TOON {self.config.dtoon_mode} mode requires llm_api_key"
+            )
+
+        from deepcompress.integrations.llm import LLMClient
+
+        return LLMClient(provider=self.config.llm_provider, config=self.config)
+
+    def _count_compression_tokens(
+        self,
+        document: ExtractedDocument,
+        optimized_text: str,
+    ):
+        """Count original OCR text and compressed output tokens."""
+        original_text = self._document_text(document)
+        provider = self.config.token_counter_provider
+        model = self.config.token_counter_model or self.config.llm_model
+
+        original_count = count_tokens(
+            original_text,
+            provider=provider,
+            model=model,
+            api_key=self.config.llm_api_key or None,
+        )
+        compressed_count = count_tokens(
+            optimized_text,
+            provider=provider,
+            model=model,
+            api_key=self.config.llm_api_key or None,
+        )
+
+        return original_count, compressed_count
+
+    def _document_text(self, document: ExtractedDocument) -> str:
+        """Concatenate OCR page text for measured original token counts."""
+        return "\n\n".join(
+            page.raw_text.strip()
+            for page in document.pages
+            if page.raw_text and page.raw_text.strip()
+        )
 
     async def compress_batch(
         self,

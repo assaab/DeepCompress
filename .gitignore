@@ -1,11 +1,13 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyd
 *.so
+
+# Python packaging and build artifacts
 .Python
 build/
-develop-eggs/
 dist/
 downloads/
 eggs/
@@ -16,78 +18,193 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
+*.manifest
+*.spec
+pip-wheel-metadata/
 
 # Virtual environments
+.venv/
 venv/
-ENV/
 env/
-.venv
+ENV/
+.env/
+.virtualenv/
 
-# IDEs
+# Installer and dependency caches
+.pip-cache/
+pip-log.txt
+pip-delete-this-directory.txt
+.uv/
+uv.lock
+Pipfile.lock
+poetry.lock
+pdm.lock
+.pdm.toml
+
+# Test, coverage, and quality-tool output
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.pyright/
+.ruff_cache/
+.cache/
+.benchmarks/
+
+# Jupyter and notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Environment variables, secrets, and credentials
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+secrets/
+credentials/
+
+# Logs and runtime state
+*.log
+logs/
+log/
+*.pid
+*.seed
+*.pid.lock
+*.stackdump
+
+# Local data, uploads, generated documents, and scratch files
+data/
+datasets/
+files/
+uploads/
+outputs/
+tmp/
+temp/
+.tmp/
+.files/
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.tif
+*.tiff
+*.bmp
+*.webp
+
+# Model weights and ML caches
+models/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.bin
+*.safetensors
+*.gguf
+*.h5
+*.pb
+.huggingface/
+.transformers/
+.torch/
+.keras/
+wandb/
+mlruns/
+lightning_logs/
+runs/
+
+# Database and service state
+*.db
+*.sqlite
+*.sqlite3
+dump.rdb
+appendonly.aof
+redis-data/
+prometheus_data/
+
+# Docker and compose local overrides
+.dockerignore
+docker-compose.override.yml
+docker-compose.local.yml
+.docker/
+
+# OS generated files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Editors and IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-.DS_Store
+*.sublime-project
+*.sublime-workspace
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.hypothesis/
+# Local AI assistant and MCP workspace files
+.claude/
+.cursor/
+.code-review-graph/
+.codex/
+.mcp.json
+.opencode.json
+.cursorrules
+.windsurfrules
+AGENTS.md
+CLAUDE.md
+GEMINI.md
 
-# Type checking
-.mypy_cache/
-.dmypy.json
-dmypy.json
+# Documentation build output
+docs/_build/
+site/
 
-# Jupyter
-.ipynb_checkpoints
-*.ipynb
+# TypeScript / frontend artifacts, in case examples or docs add them
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.next/
+.nuxt/
+.svelte-kit/
+coverage/
 
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# Logs
-*.log
-logs/
-
-# Model weights and cache
-models/
-.cache/
-*.pth
-*.bin
-*.safetensors
-
-# Data
-data/
-*.pdf
-*.png
-*.jpg
-*.jpeg
-
-# Docker
-.dockerignore
-docker-compose.override.yml
-
-# Prometheus
-prometheus_data/
-
-# Redis
-dump.rdb
-
-# Coverage
-.coverage.*
-coverage.xml
-
-# Distribution
-*.whl
-
+# Miscellaneous archives and local exports
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.bak
+*.tmp
+*.orig

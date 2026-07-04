@@ -118,6 +118,12 @@ async def compress_and_analyze(
         original_tokens=compressed.original_tokens,
         compressed_tokens=compressed.compressed_tokens,
         compression_ratio=compressed.compression_ratio,
+        original_tokens_measured=compressed.original_tokens_measured,
+        compressed_tokens_measured=compressed.compressed_tokens_measured,
+        compression_ratio_measured=compressed.compression_ratio_measured,
+        token_counter_provider=compressed.token_counter_provider,
+        token_counter_model=compressed.token_counter_model,
+        is_estimated=compressed.is_estimated,
         optimized_text=compressed_text,
         answer=answer.text,
         processing_time_ms=compressed.processing_time_ms + answer.processing_time_ms,
@@ -125,4 +131,3 @@ async def compress_and_analyze(
         cost_saved_usd=compressed.cost_saved_usd,
         cache_hit=compressed.cache_hit,
     )
-

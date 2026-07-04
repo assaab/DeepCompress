@@ -129,6 +129,20 @@ class DeepCompressConfig(BaseSettings):
         description="Vector database index name",
     )
 
+    # Compression Configuration
+    dtoon_mode: Literal["raw", "structured", "rag"] = Field(
+        default="raw",
+        description="D-TOON output mode",
+    )
+    token_counter_provider: Literal["openai", "claude", "llama"] = Field(
+        default="openai",
+        description="Provider tokenizer used for compression metrics",
+    )
+    token_counter_model: str = Field(
+        default="gpt-4o",
+        description="Model tokenizer used for compression metrics",
+    )
+
     # LLM Configuration
     llm_provider: Literal["openai", "claude", "llama"] = Field(
         default="openai",
