@@ -70,6 +70,7 @@ benchmarks/results/ocr_colab/
 # Jupyter and notebooks
 .ipynb_checkpoints/
 *.ipynb
+!benchmarks/ocr_colab_benchmark.ipynb
 
 # Environment variables, secrets, and credentials
 .env
