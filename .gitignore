@@ -213,4 +213,5 @@ coverage/
 *.tmp
 *.orig
 tests/*
+!tests/test_ocr_extractor_loading.py
 

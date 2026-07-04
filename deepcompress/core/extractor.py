@@ -39,7 +39,7 @@ class OCRExtractor:
         """
         try:
             import torch
-            from transformers import AutoModel, AutoTokenizer
+            from transformers import AutoModel
             import warnings
             import logging
             import os
@@ -63,13 +63,7 @@ class OCRExtractor:
             logger.info("Applying transformers compatibility patches...")
             self._apply_transformers_compatibility_patch()
 
-            # DeepSeek-OCR uses AutoTokenizer, not AutoProcessor
-            self._tokenizer = AutoTokenizer.from_pretrained(
-                self.config.ocr_model,
-                revision=self.config.ocr_model_revision,
-                trust_remote_code=True,
-                use_fast=self.config.ocr_use_fast_tokenizer,
-            )
+            self._tokenizer = self._load_tokenizer()
             
             # Configure tokenizer properly to avoid warnings
             if self._tokenizer.pad_token is None:
@@ -171,11 +165,12 @@ class OCRExtractor:
 
             logger = logging.getLogger(__name__)
             error_msg = str(e)
+            repairable_load_error = self._is_repairable_model_cache_error(error_msg)
 
             if (
                 self.config.ocr_repair_hf_cache
                 and not self._hf_cache_repair_attempted
-                and self._is_repairable_model_cache_error(error_msg)
+                and repairable_load_error
             ):
                 self._hf_cache_repair_attempted = True
                 logger.warning(
@@ -196,8 +191,11 @@ class OCRExtractor:
 
             logger.error(f"Failed to initialize OCR model on {self._device}: {error_msg}")
 
+            if isinstance(e, OCRError):
+                raise
+
             # Try fallback to CPU if CUDA failed
-            if self._device.startswith("cuda") and "CUDA" in error_msg:
+            if self._device.startswith("cuda") and "cuda" in error_msg.lower():
                 logger.info("CUDA initialization failed, trying CPU fallback...")
                 try:
                     self._device = "cpu"
@@ -205,14 +203,9 @@ class OCRExtractor:
 
                     # Retry initialization with CPU
                     import torch
-                    from transformers import AutoModel, AutoTokenizer
+                    from transformers import AutoModel
 
-                    self._tokenizer = AutoTokenizer.from_pretrained(
-                        self.config.ocr_model,
-                        revision=self.config.ocr_model_revision,
-                        trust_remote_code=True,
-                        use_fast=self.config.ocr_use_fast_tokenizer,
-                    )
+                    self._tokenizer = self._load_tokenizer()
 
                     if self._tokenizer.pad_token is None:
                         if self._tokenizer.eos_token is not None:
@@ -898,6 +891,129 @@ class OCRExtractor:
         """
         return hashlib.sha256(file_path.encode()).hexdigest()[:16]
 
+    def _load_tokenizer(self) -> Any:
+        """Load the DeepSeek-OCR tokenizer with robust version fallbacks."""
+        import logging
+
+        from transformers import AutoTokenizer
+
+        logger = logging.getLogger(__name__)
+        self._validate_ocr_dependency_versions()
+        common_kwargs = {
+            "revision": self.config.ocr_model_revision,
+            "trust_remote_code": True,
+        }
+
+        attempts: list[tuple[str, dict[str, Any]]] = [
+            (
+                "auto-configured tokenizer",
+                {
+                    **common_kwargs,
+                    "use_fast": self.config.ocr_use_fast_tokenizer,
+                },
+            )
+        ]
+        if not self.config.ocr_use_fast_tokenizer:
+            attempts.append(
+                (
+                    "slow tokenizer without tokenizer_file",
+                    {
+                        **common_kwargs,
+                        "use_fast": False,
+                        "tokenizer_file": None,
+                        "legacy": True,
+                    },
+                )
+            )
+
+        errors: list[str] = []
+        for label, kwargs in attempts:
+            try:
+                logger.info("Loading OCR tokenizer with %s", label)
+                return AutoTokenizer.from_pretrained(self.config.ocr_model, **kwargs)
+            except Exception as exc:
+                message = str(exc)
+                errors.append(f"{label}: {message}")
+                if not self._is_tokenizer_modelwrapper_error(message):
+                    raise
+                logger.warning("OCR tokenizer load failed with %s: %s", label, message)
+
+        try:
+            from transformers import LlamaTokenizer
+
+            logger.info("Loading OCR tokenizer with LlamaTokenizer slow fallback")
+            return LlamaTokenizer.from_pretrained(
+                self.config.ocr_model,
+                revision=self.config.ocr_model_revision,
+                trust_remote_code=True,
+                legacy=True,
+            )
+        except Exception as exc:
+            errors.append(f"LlamaTokenizer slow fallback: {exc}")
+
+        raise OCRError(
+            "Failed to load DeepSeek-OCR tokenizer from tokenizer.json. This "
+            "usually means the installed tokenizers/transformers versions "
+            "cannot parse the model tokenizer. Install the OCR stack with: "
+            "pip install -U 'transformers>=4.46.3,<4.47.0' "
+            "'tokenizers>=0.20.3,<0.21.0' sentencepiece",
+            details={"attempts": errors},
+        )
+
+    def _validate_ocr_dependency_versions(self) -> None:
+        """Fail early when Colab or pip resolved an incompatible OCR stack."""
+        from importlib.metadata import PackageNotFoundError, version
+
+        requirements = {
+            "transformers": ("4.46.3", "4.47.0"),
+            "tokenizers": ("0.20.3", "0.21.0"),
+        }
+        installed: dict[str, str] = {}
+        invalid: list[str] = []
+
+        for package, (minimum, maximum) in requirements.items():
+            try:
+                installed_version = version(package)
+            except PackageNotFoundError:
+                invalid.append(f"{package} is not installed")
+                continue
+
+            installed[package] = installed_version
+            if not self._version_in_range(installed_version, minimum, maximum):
+                invalid.append(
+                    f"{package}=={installed_version} is outside the supported "
+                    f"range >={minimum},<{maximum}"
+                )
+
+        if invalid:
+            raise OCRError(
+                "DeepSeek-OCR requires a tested transformers/tokenizers pair. "
+                "Install with: pip install -U "
+                "'transformers>=4.46.3,<4.47.0' "
+                "'tokenizers>=0.20.3,<0.21.0' sentencepiece",
+                details={"installed": installed, "errors": invalid},
+            )
+
+    def _version_in_range(self, value: str, minimum: str, maximum: str) -> bool:
+        current = self._version_tuple(value)
+        return self._version_tuple(minimum) <= current < self._version_tuple(maximum)
+
+    def _version_tuple(self, value: str) -> tuple[int, int, int]:
+        import re
+
+        numbers = [int(part) for part in re.findall(r"\d+", value.split("+", 1)[0])]
+        while len(numbers) < 3:
+            numbers.append(0)
+        return tuple(numbers[:3])
+
+    def _is_tokenizer_modelwrapper_error(self, error_msg: str) -> bool:
+        lowered = error_msg.lower()
+        return (
+            "modelwrapper" in lowered
+            or "untagged enum" in lowered
+            or "tokenizer.json" in lowered
+        )
+
     def _is_repairable_model_cache_error(self, error_msg: str) -> bool:
         """Return True for known Hugging Face cache/remote-code load failures."""
         lowered = error_msg.lower()
@@ -908,9 +1024,11 @@ class OCRExtractor:
             "does not appear to have a file named",
             "couldn't find",
             "could not locate",
+            "tokenizer.json",
             "corrupt",
             "incomplete",
             "snapshot",
+            "untagged enum",
         ]
         return any(marker in lowered for marker in markers)
 
@@ -935,10 +1053,11 @@ class OCRExtractor:
         ]
 
         modules_root = Path(os.getenv("HF_MODULES_CACHE", hf_home / "modules"))
+        model_modules_dir = modules_root / "transformers_modules" / org / name
+        org_modules_dir = modules_root / "transformers_modules" / org
         candidate_paths.extend(
             [
-                modules_root / "transformers_modules" / org / name,
-                modules_root / "transformers_modules" / org,
+                model_modules_dir,
             ]
         )
 
@@ -951,6 +1070,14 @@ class OCRExtractor:
                 continue
             shutil.rmtree(resolved, ignore_errors=True)
             cleared_paths.append(str(resolved))
+
+        try:
+            resolved_org_dir = org_modules_dir.expanduser().resolve()
+            if resolved_org_dir.exists() and not any(resolved_org_dir.iterdir()):
+                resolved_org_dir.rmdir()
+                cleared_paths.append(str(resolved_org_dir))
+        except OSError:
+            pass
 
         return cleared_paths
 

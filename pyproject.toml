@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deepcompress"
-version = "1.4.8"
+version = "1.4.9"
 description = "Enterprise document compression for lower-cost LLM and RAG pipelines"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -42,8 +42,8 @@ dependencies = [
 [project.optional-dependencies]
 gpu = [
     "torch>=2.0.0,<3.0.0",  # Support torch 2.x including 2.8.0+
-    "transformers>=4.38.0,<=4.44.2",  # DeepSeek-OCR remote code relies on pre-4.45 Llama internals
-    "tokenizers>=0.19.0,<0.20.0",  # Keep compatible with transformers<=4.44.2
+    "transformers>=4.46.3,<4.47.0",  # Narrow, tested range for DeepSeek-OCR remote code
+    "tokenizers>=0.20.3,<0.21.0",  # Required to parse DeepSeek-OCR tokenizer.json
     "pillow>=10.0.0",
     "pdf2image>=1.17.0",
     "accelerate>=0.20.0",
@@ -53,8 +53,8 @@ gpu = [
 ]
 colab = [
     # Lightweight extra for Google Colab (uses pre-installed torch)
-    "transformers>=4.38.0,<=4.44.2",
-    "tokenizers>=0.19.0,<0.20.0",
+    "transformers>=4.46.3,<4.47.0",
+    "tokenizers>=0.20.3,<0.21.0",
     "pillow>=10.0.0",
     "pdf2image>=1.17.0",
     "accelerate>=0.20.0",
