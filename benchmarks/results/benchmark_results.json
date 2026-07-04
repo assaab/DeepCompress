@@ -1,0 +1,182 @@
+{
+  "model": "gpt-4o",
+  "modes": [
+    {
+      "mode": "full_text",
+      "tokens": 208,
+      "cost_usd": 0.002392,
+      "answer_accuracy": 1.0,
+      "retrieval_hit_rate": 1.0,
+      "citation_correctness": 1.0,
+      "exact_values_preserved": 1.0,
+      "latency_ms": 8.14619999982824,
+      "questions": [
+        {
+          "question_id": "loan-income",
+          "document_id": "loan-app-001",
+          "answer": "[p2] Income summary. Payroll income: $17,000/month. Freelance income: $3,200/month. Total monthly income: $20,200.",
+          "retrieved_pages": [
+            1,
+            2,
+            3
+          ],
+          "cited_pages": [
+            2
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.19489999976940453,
+          "tokens_used": 166
+        },
+        {
+          "question_id": "loan-debt",
+          "document_id": "loan-app-001",
+          "answer": "[p3] Debt obligations. Car loan: $420/month. Credit card minimum payment: $180/month. Total monthly debt: $600/month.",
+          "retrieved_pages": [
+            1,
+            2,
+            3
+          ],
+          "cited_pages": [
+            3
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.10939999992842786,
+          "tokens_used": 160
+        },
+        {
+          "question_id": "contract-payment",
+          "document_id": "contract-001",
+          "answer": "[p2] Payment terms. Monthly service fee: $8,500. Invoice due date: net 30. Late fee: 1.5% per month.",
+          "retrieved_pages": [
+            1,
+            2,
+            3
+          ],
+          "cited_pages": [
+            2
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.10399999973742524,
+          "tokens_used": 126
+        },
+        {
+          "question_id": "contract-termination",
+          "document_id": "contract-001",
+          "answer": "[p3] Termination clause. Either party may terminate for material breach after 30 days written notice if the breach remains uncured.",
+          "retrieved_pages": [
+            3
+          ],
+          "cited_pages": [
+            3
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.10589999965304742,
+          "tokens_used": 137
+        }
+      ]
+    },
+    {
+      "mode": "deepcompress_rag",
+      "tokens": 162,
+      "cost_usd": 0.001863,
+      "answer_accuracy": 1.0,
+      "retrieval_hit_rate": 1.0,
+      "citation_correctness": 1.0,
+      "exact_values_preserved": 0.95,
+      "latency_ms": 9.804799999983516,
+      "questions": [
+        {
+          "question_id": "loan-income",
+          "document_id": "loan-app-001",
+          "answer": "[p2] Income: payroll $17,000/month; freelance $3,200/month; total monthly income $20,200.",
+          "retrieved_pages": [
+            1,
+            2,
+            3
+          ],
+          "cited_pages": [
+            2
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.1554000000396627,
+          "tokens_used": 128
+        },
+        {
+          "question_id": "loan-debt",
+          "document_id": "loan-app-001",
+          "answer": "[p3] Debt: car loan $420/month; credit card minimum $180/month; total monthly debt $600/month.",
+          "retrieved_pages": [
+            1,
+            2,
+            3
+          ],
+          "cited_pages": [
+            3
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.09779999982129084,
+          "tokens_used": 122
+        },
+        {
+          "question_id": "contract-payment",
+          "document_id": "contract-001",
+          "answer": "[p2] Payment: monthly service fee $8,500; invoices due net 30; late fee 1.5% per month.",
+          "retrieved_pages": [
+            1,
+            2,
+            3
+          ],
+          "cited_pages": [
+            2
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.17519999983051093,
+          "tokens_used": 109
+        },
+        {
+          "question_id": "contract-termination",
+          "document_id": "contract-001",
+          "answer": "[p3] Termination: material breach requires 30 days written notice and uncured breach.",
+          "retrieved_pages": [
+            2,
+            3
+          ],
+          "cited_pages": [
+            3
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.08140000045386842,
+          "tokens_used": 111
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "token_reduction": 0.22115384615384615,
+    "cost_reduction": 0.22115384615384615
+  }
+}

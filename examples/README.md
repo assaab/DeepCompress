@@ -80,6 +80,23 @@ python examples/advanced_usage.py
 
 ---
 
+### 5. Enterprise RAG Demo (`enterprise_rag_demo/demo.py`)
+
+Offline RAG benchmark-style demo with synthetic page-cited evidence and measured
+token savings.
+
+```bash
+python examples/enterprise_rag_demo/demo.py
+```
+
+**What it demonstrates:**
+- Full-text vs compressed RAG context
+- Page-cited evidence
+- Token reduction and cost savings
+- No API keys, Redis, vector DB, CUDA, or network required
+
+---
+
 ## Setup
 
 ### 1. Install EDC
