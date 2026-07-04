@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deepcompress"
-version = "1.4.6"
+version = "1.4.7"
 description = "Enterprise document compression for lower-cost LLM and RAG pipelines"
 readme = "README.md"
 requires-python = ">=3.9"
