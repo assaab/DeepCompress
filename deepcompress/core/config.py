@@ -142,6 +142,10 @@ class DeepCompressConfig(BaseSettings):
         default="gpt-4o",
         description="Model tokenizer used for compression metrics",
     )
+    protect_facts: bool = Field(
+        default=True,
+        description="Preserve exact enterprise facts after compression",
+    )
 
     # LLM Configuration
     llm_provider: Literal["openai", "claude", "llama"] = Field(

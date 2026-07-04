@@ -100,7 +100,7 @@ class PIIScrubber:
         return {
             "ssn": r"\b\d{3}-\d{2}-\d{4}\b",
             "credit_card": r"\b(?:\d{4}[-\s]?){3}\d{4}\b",
-            "phone": r"\b(?:\+\d{1,2}\s?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b",
+            "phone": r"(?<!\d)(?:\+\d{1,2}\s?)?(?:\(\d{3}\)|\d{3})[-.\s]?\d{3}[-.\s]?\d{4}\b",
             "email": r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
             "routing_number": r"\b\d{9}\b",
             "account_number": r"\b\d{10,17}\b",

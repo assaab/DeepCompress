@@ -5,16 +5,16 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "deepcompress"
 version = "1.4.5"
-description = "Production-ready document compression library reducing LLM costs by 96% with DeepSeek-OCR integration"
+description = "Enterprise document compression for lower-cost LLM and RAG pipelines"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
 authors = [
-    {name = "Your Organization", email = "engineering@yourorg.com"}
+    {name = "DeepCompress Contributors", email = "engineering@example.com"}
 ]
 keywords = ["document-processing", "ocr", "llm", "compression", "rag", "deepseek", "financial-services"]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Financial and Insurance Industry",
     "Programming Language :: Python :: 3.9",
@@ -128,10 +128,9 @@ disallow_untyped_defs = true
 plugins = ["pydantic.mypy"]
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "--cov=deepcompress --cov-report=html --cov-report=term-missing"
+addopts = ""
 

@@ -1,0 +1,24 @@
+[p1]
+Loan Application APP-2026-001 for applicant Ada Lovelace.
+Applicant email: ada@example.com.
+Application date: 2026-03-15.
+This document is a synthetic enterprise demo fixture used for offline RAG testing.
+
+[p2]
+Income summary for the applicant.
+Payroll income is documented as $17,000/month.
+Freelance income is documented as $3,200/month.
+The total monthly income is $20,200.
+The applicant provided supporting income documentation for each income source.
+
+[p3]
+Debt obligations for underwriting review.
+Car loan payment is $420/month.
+Credit card minimum payment is $180/month.
+The total monthly debt is $600/month.
+
+[p4]
+Contract terms.
+Payment terms: net 30.
+The receiving party shall keep all confidential information private.
+The agreement renews annually unless either party gives written notice.

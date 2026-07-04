@@ -1,8 +1,7 @@
 """
 DeepCompress
 
-A production-ready Python library that reduces LLM document processing costs by 96%
-using DeepSeek-OCR vision-based compression and D-TOON optimization.
+Enterprise document compression for lower-cost LLM and RAG pipelines.
 
 Example:
     >>> from deepcompress import compress_and_analyze
@@ -30,10 +29,11 @@ from deepcompress.exceptions import (
 from deepcompress.models.document import Entity, ExtractedDocument, Page, Table
 from deepcompress.models.response import CompressionResult
 from deepcompress.processing.batch import BatchProcessor
+from deepcompress.processing.protected_facts import extract_protected_facts
 from deepcompress.utils.cost import calculate_savings
 
 __version__ = "1.4.2"
-__author__ = "Your Organization"
+__author__ = "DeepCompress Contributors"
 __license__ = "MIT"
 
 __all__ = [
@@ -57,6 +57,7 @@ __all__ = [
     "ValidationError",
     # Utilities
     "calculate_savings",
+    "extract_protected_facts",
     # High-level API
     "compress_and_analyze",
 ]
@@ -124,10 +125,12 @@ async def compress_and_analyze(
         token_counter_provider=compressed.token_counter_provider,
         token_counter_model=compressed.token_counter_model,
         is_estimated=compressed.is_estimated,
+        protected_facts=compressed.protected_facts,
         optimized_text=compressed_text,
         answer=answer.text,
         processing_time_ms=compressed.processing_time_ms + answer.processing_time_ms,
         tokens_saved=compressed.tokens_saved,
         cost_saved_usd=compressed.cost_saved_usd,
         cache_hit=compressed.cache_hit,
+        metadata={"protected_facts": compressed.protected_facts},
     )

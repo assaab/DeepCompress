@@ -10,6 +10,11 @@ from deepcompress.core.extractor import OCRExtractor
 from deepcompress.core.optimizer import DTOONOptimizer
 from deepcompress.exceptions import ConfigurationError, ProcessingError
 from deepcompress.models.document import ExtractedDocument
+from deepcompress.processing.protected_facts import (
+    append_missing_protected_facts,
+    extract_protected_facts,
+    extract_protected_facts_with_pages,
+)
 from deepcompress.utils.token_counter import count_tokens
 
 
@@ -45,6 +50,7 @@ class CompressedDocument:
         token_counter_provider: str = "openai",
         token_counter_model: str = "gpt-4o",
         is_estimated: bool = False,
+        protected_facts: dict[str, list[str]] or None = None,
     ) -> None:
         self.document_id = document_id
         self.extracted = extracted
@@ -70,6 +76,7 @@ class CompressedDocument:
         self.token_counter_provider = token_counter_provider
         self.token_counter_model = token_counter_model
         self.is_estimated = is_estimated
+        self.protected_facts = protected_facts or {}
 
         # Backward-compatible aliases now use the measured values.
         self.original_tokens = self.original_tokens_measured
@@ -105,9 +112,8 @@ class DocumentCompressor:
     """
     Main compression engine combining OCR extraction and D-TOON optimization.
 
-    Reduces document tokens by 96% through:
-    1. DeepSeek-OCR vision compression (5000 → 200 tokens/page)
-    2. D-TOON format optimization (200 → 80 tokens/page)
+    Combines OCR extraction, D-TOON optimization, measured token counting,
+    and protected exact-value preservation.
     """
 
     def __init__(self, config: DeepCompressConfig  or None = None) -> None:
@@ -164,12 +170,27 @@ class DocumentCompressor:
                 file_path=file_path,
                 document_id=document_id,
             )
+            protected_facts_with_pages = (
+                extract_protected_facts_with_pages(extracted)
+                if self.config.protect_facts
+                else {}
+            )
+            protected_facts = (
+                extract_protected_facts(extracted)
+                if self.config.protect_facts
+                else {}
+            )
 
             optimized_text = await self.optimizer.optimize_async(
                 extracted,
                 mode=self.config.dtoon_mode,
                 llm_client=await self._get_dtoon_llm_client(),
             )
+            if self.config.protect_facts:
+                optimized_text = append_missing_protected_facts(
+                    optimized_text,
+                    protected_facts_with_pages,
+                )
 
             original_count, compressed_count = self._count_compression_tokens(
                 extracted,
@@ -197,6 +218,7 @@ class DocumentCompressor:
                 token_counter_provider=compressed_count.provider,
                 token_counter_model=compressed_count.model,
                 is_estimated=original_count.is_estimated or compressed_count.is_estimated,
+                protected_facts=protected_facts,
             )
 
             if cache_manager:

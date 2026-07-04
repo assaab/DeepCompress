@@ -23,7 +23,7 @@ Reduction: ...
 Cost saved: ...
 ```
 
-The numbers are measured from the synthetic fixture text and the configured token
-counter. Compression ratios depend on document type, OCR quality, target model,
-and compression mode.
-
+The demo loads a synthetic fixture, extracts protected facts, builds a local
+in-memory chunk index, answers with page evidence, and prints measured token and
+cost savings. Compression ratios depend on document type, OCR quality, target
+model, and compression mode.
