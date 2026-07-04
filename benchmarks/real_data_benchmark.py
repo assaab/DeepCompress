@@ -517,10 +517,24 @@ def main(argv: list[str] | None = None) -> int:
 
     import os
 
+    def load_dotenv_if_present(path: Path) -> None:
+        if not path.exists():
+            return
+        for raw_line in path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+    load_dotenv_if_present(ROOT.parent / ".env")
+
     llm_api_key = args.llm_api_key
     if not llm_api_key and args.dtoon_mode != "raw":
         env_key = "OPENAI_API_KEY" if args.llm_provider == "openai" else "ANTHROPIC_API_KEY"
         llm_api_key = os.getenv(env_key, "")
+        if not llm_api_key and args.llm_provider == "openai":
+            llm_api_key = os.getenv("AZURE_OPENAI_API_KEY", "")
 
     results = asyncio.run(
         run_real_benchmark_async(

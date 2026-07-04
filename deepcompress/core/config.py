@@ -171,6 +171,18 @@ class DeepCompressConfig(BaseSettings):
         le=2.0,
         description="LLM temperature",
     )
+    azure_openai_endpoint: str = Field(
+        default="",
+        description="Azure OpenAI endpoint URL",
+    )
+    azure_openai_deployment: str = Field(
+        default="",
+        description="Azure OpenAI deployment name",
+    )
+    azure_openai_api_version: str = Field(
+        default="2024-10-21",
+        description="Azure OpenAI API version",
+    )
 
     # AWS Configuration
     aws_access_key_id: str = Field(

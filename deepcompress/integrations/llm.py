@@ -27,6 +27,7 @@ class LLMClient:
         self.provider = provider.lower()
         self.config = config
         self._client: Any = None
+        self._chat_model = config.llm_model
 
     async def initialize(self) -> None:
         """Initialize LLM client."""
@@ -45,9 +46,19 @@ class LLMClient:
     async def _init_openai(self) -> None:
         """Initialize OpenAI client."""
         try:
-            from openai import AsyncOpenAI
+            from openai import AsyncAzureOpenAI, AsyncOpenAI
 
-            self._client = AsyncOpenAI(api_key=self.config.llm_api_key)
+            if self.config.azure_openai_endpoint:
+                self._chat_model = (
+                    self.config.azure_openai_deployment or self.config.llm_model
+                )
+                self._client = AsyncAzureOpenAI(
+                    api_key=self.config.llm_api_key,
+                    api_version=self.config.azure_openai_api_version,
+                    azure_endpoint=self.config.azure_openai_endpoint,
+                )
+            else:
+                self._client = AsyncOpenAI(api_key=self.config.llm_api_key)
         except ImportError:
             raise LLMError(
                 "OpenAI not installed. Install with: pip install deepcompress[llm]"
@@ -148,12 +159,17 @@ class LLMClient:
             "content": f"Document data:\n{context}\n\nQuestion: {question}",
         })
 
-        response = await self._client.chat.completions.create(
-            model=self.config.llm_model,
-            messages=messages,
-            max_tokens=self.config.llm_max_tokens,
-            temperature=self.config.llm_temperature,
-        )
+        completion_args: dict[str, Any] = {
+            "model": self._chat_model,
+            "messages": messages,
+        }
+        if self.config.azure_openai_endpoint:
+            completion_args["max_completion_tokens"] = self.config.llm_max_tokens
+        else:
+            completion_args["max_tokens"] = self.config.llm_max_tokens
+            completion_args["temperature"] = self.config.llm_temperature
+
+        response = await self._client.chat.completions.create(**completion_args)
 
         return {
             "text": response.choices[0].message.content,

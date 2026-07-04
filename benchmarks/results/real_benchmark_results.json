@@ -1,26 +1,26 @@
 {
   "benchmark": "real_data",
   "library_source": "local_repo",
-  "dtoon_mode": "raw",
+  "dtoon_mode": "rag",
   "model": "gpt-4o",
   "documents": [
     {
       "document_id": "loan_application",
       "source_file": "C:\\Users\\amjad\\Desktop\\EDC\\benchmarks\\fixtures\\real\\loan_application.txt",
       "original_tokens": 413,
-      "compressed_tokens": 440,
-      "compression_ratio": 0.939,
-      "processing_time_ms": 13.88,
-      "chunk_count": 4
+      "compressed_tokens": 399,
+      "compression_ratio": 1.035,
+      "processing_time_ms": 6945.09,
+      "chunk_count": 8
     },
     {
       "document_id": "services_agreement",
       "source_file": "C:\\Users\\amjad\\Desktop\\EDC\\benchmarks\\fixtures\\real\\services_agreement.txt",
       "original_tokens": 256,
-      "compressed_tokens": 280,
-      "compression_ratio": 0.914,
-      "processing_time_ms": 4.23,
-      "chunk_count": 3
+      "compressed_tokens": 404,
+      "compression_ratio": 0.634,
+      "processing_time_ms": 4543.55,
+      "chunk_count": 6
     }
   ],
   "modes": [
@@ -32,7 +32,7 @@
       "retrieval_hit_rate": 1.0,
       "citation_correctness": 1.0,
       "exact_values_preserved": 1.0,
-      "latency_ms": 7.926700000098208,
+      "latency_ms": 8.059900001171627,
       "questions": [
         {
           "question_id": "loan-income",
@@ -50,7 +50,7 @@
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.16799999957584077,
+          "latency_ms": 0.2023999986704439,
           "tokens_used": 570
         },
         {
@@ -69,7 +69,7 @@
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.1421999995727674,
+          "latency_ms": 0.19739999879675452,
           "tokens_used": 527
         },
         {
@@ -88,7 +88,7 @@
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 0.5,
-          "latency_ms": 0.1357000001007691,
+          "latency_ms": 0.15250000069499947,
           "tokens_used": 513
         },
         {
@@ -107,7 +107,7 @@
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.15840000014577527,
+          "latency_ms": 0.09639999916544184,
           "tokens_used": 355
         },
         {
@@ -126,66 +126,67 @@
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.10449999990669312,
+          "latency_ms": 0.0901000003068475,
           "tokens_used": 368
         }
       ]
     },
     {
       "mode": "deepcompress_rag",
-      "tokens": 678,
-      "cost_usd": 0.007797,
+      "tokens": 803,
+      "cost_usd": 0.009234500000000001,
       "answer_accuracy": 1.0,
       "retrieval_hit_rate": 1.0,
       "citation_correctness": 1.0,
       "exact_values_preserved": 1.0,
-      "latency_ms": 7.405000000289874,
+      "latency_ms": 6.964099999095197,
       "questions": [
         {
           "question_id": "loan-income",
           "document_id": "loan_application",
-          "answer": "[p2] INCOME SUMMARY AND SUPPORTING DETAILS\nSection 2.1 Payroll and W-2 income.\nThe applicant reports verified payroll income of $17,000 per month from Analytical Engines LLC.\nSection 2.2 Self-employment and freelance income.\nThe applicant reports freelance consulting income of $3,200 per month from independent contracts.\nSection 2.3 Combined income total.\nAfter reviewing payroll stubs and freelance invoices, total monthly income is $20,200.\nThe applicant provided supporting income documentation for each income source listed above.",
+          "answer": "[p2] Income summary: verified payroll income is $17,000 per month from Analytical Engines LLC; freelance consulting income is $3,200 per month from independent contracts. [p2] Combined income total after reviewing payroll stubs and freelance invoices is $20,200 per month; supporting income documentation provided for each listed source. [p4] Recommended underwriting action is approve subject to standard closing conditions; memo summarizes findings from loan application packet dated 2026-03-15.\nProtected facts:\n- table_totals: [p2] Section 2.3 Combined income total.\n- table_totals: [p2] After reviewing payroll stubs and freelance invoices, total monthly income is $20,200.\n- table_totals: [p3] Section 3.3 Total monthly debt.\n- table_totals: [p3] Combined recurring monthly debt obligations total $600 per month.",
           "retrieved_pages": [
-            1,
             2,
             4
           ],
           "cited_pages": [
-            2
+            2,
+            3,
+            4
           ],
           "answer_accuracy": 1.0,
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.147800000377174,
-          "tokens_used": 570
+          "latency_ms": 0.1723000004858477,
+          "tokens_used": 622
         },
         {
           "question_id": "loan-debt",
           "document_id": "loan_application",
-          "answer": "[p3] MONTHLY DEBT OBLIGATIONS\nSection 3.1 Installment debt.\nAutomobile loan monthly payment reported as $420 per month.\nSection 3.2 Revolving debt.\nCredit card minimum monthly payment reported as $180 per month.\nSection 3.3 Total monthly debt.\nCombined recurring monthly debt obligations total $600 per month.\nUnderwriter note: debt figures were taken from the most recent credit report pull.",
+          "answer": "[p3] Combined recurring monthly debt obligations total $600 per month; underwriter note says debt figures came from the most recent credit report pull. [p4] Recommended underwriting action is approve subject to standard closing conditions; memo summarizes findings from loan application packet dated 2026-03-15.\nProtected facts:\n- table_totals: [p2] Section 2.3 Combined income total.\n- table_totals: [p2] After reviewing payroll stubs and freelance invoices, total monthly income is $20,200.\n- table_totals: [p3] Section 3.3 Total monthly debt.\n- table_totals: [p3] Combined recurring monthly debt obligations total $600 per month. [p3] Monthly debt obligations: automobile loan payment $420 per month; credit card minimum monthly payment $180 per month.",
           "retrieved_pages": [
-            1,
-            2,
-            3
+            3,
+            4
           ],
           "cited_pages": [
-            3
+            2,
+            3,
+            4
           ],
           "answer_accuracy": 1.0,
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.1326000001427019,
-          "tokens_used": 527
+          "latency_ms": 0.13940000098955352,
+          "tokens_used": 599
         },
         {
           "question_id": "loan-decision",
           "document_id": "loan_application",
-          "answer": "[p4] UNDERWRITING DECISION MEMO\nDebt-to-income ratio calculated at 2.97 percent based on verified income and debt.\nApplicant credit score from bureau file: 740.\nRecommended underwriting action: approve subject to standard closing conditions.\nThis memo summarizes findings from the loan application packet dated 2026-03-15.",
+          "answer": "[p4] Underwriting decision memo: debt-to-income ratio calculated at 2.97 percent based on verified income and debt; applicant credit score from bureau file is 740.",
           "retrieved_pages": [
-            2,
-            3,
+            1,
             4
           ],
           "cited_pages": [
@@ -195,52 +196,55 @@
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 0.5,
-          "latency_ms": 0.18309999995835824,
-          "tokens_used": 513
+          "latency_ms": 0.13670000043930486,
+          "tokens_used": 454
         },
         {
           "question_id": "contract-payment",
           "document_id": "services_agreement",
-          "answer": "[p2] PAYMENT TERMS AND BILLING\nMonthly recurring service fee: $8,500.\nInvoices are payable under net 30 payment terms from invoice date.\nLate payments accrue a finance charge of 1.5% per month on unpaid balances.\nVendor billing contact: billing@northwind.example.com.\nCustomer accounts payable contact: ap@contoso.example.com.",
+          "answer": "[p2] Payment terms: monthly recurring service fee is $8,500; invoices are payable net 30 from invoice date; late payments accrue a finance charge of 1.5% per month on unpaid balances. [p3] Confidential information must remain protected through termination and for 12 months thereafter.\nProtected facts:\n- ids: [p1] entifier\n- contract_terms: [p1] Effective date of this agreement: 2026-03-15.\n- contract_terms: [p1] Initial contract term: 24 months from the effective date unless terminated earlier.\n- contract_terms: [p2] PAYMENT TERMS AND BILLING\n- contract_terms: [p2] Invoices are payable under net 30 payment terms from invoice date.\n- legal_clauses: [p3] TERMINATION AND REMEDIES\n- legal_clauses: [p3] Either party may terminate this agreement for material breach.\n- legal_clauses: [p3] The non-breaching party must provide 30 days written notice of the material breach.\n- legal_clauses: [p3] Termination for material breach is permitted only if the breach remains uncured after notice.",
           "retrieved_pages": [
             1,
             2,
             3
           ],
           "cited_pages": [
-            2
+            1,
+            2,
+            3
           ],
           "answer_accuracy": 1.0,
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.09640000007493654,
-          "tokens_used": 355
+          "latency_ms": 0.14279999959398992,
+          "tokens_used": 665
         },
         {
           "question_id": "contract-termination",
           "document_id": "services_agreement",
-          "answer": "[p3] TERMINATION AND REMEDIES\nEither party may terminate this agreement for material breach.\nThe non-breaching party must provide 30 days written notice of the material breach.\nTermination for material breach is permitted only if the breach remains uncured after notice.\nConfidential information must remain protected through termination and for 12 months thereafter.",
+          "answer": "[p3] Termination for material breach: either party may terminate; non-breaching party must provide 30 days written notice; termination is permitted only if the breach remains uncured after notice. [p3] Confidential information must remain protected through termination and for 12 months thereafter.\nProtected facts:\n- ids: [p1] entifier\n- contract_terms: [p1] Effective date of this agreement: 2026-03-15.\n- contract_terms: [p1] Initial contract term: 24 months from the effective date unless terminated earlier.\n- contract_terms: [p2] PAYMENT TERMS AND BILLING\n- contract_terms: [p2] Invoices are payable under net 30 payment terms from invoice date.\n- legal_clauses: [p3] TERMINATION AND REMEDIES\n- legal_clauses: [p3] Either party may terminate this agreement for material breach.\n- legal_clauses: [p3] The non-breaching party must provide 30 days written notice of the material breach.\n- legal_clauses: [p3] Termination for material breach is permitted only if the breach remains uncured after notice.",
           "retrieved_pages": [
-            1,
             2,
             3
           ],
           "cited_pages": [
+            1,
+            2,
             3
           ],
           "answer_accuracy": 1.0,
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.09020000015880214,
-          "tokens_used": 368
+          "latency_ms": 0.1322999996773433,
+          "tokens_used": 671
         }
       ]
     }
   ],
   "summary": {
-    "token_reduction": 0.0,
-    "cost_reduction": 0.0
+    "token_reduction": -0.18436578171091456,
+    "cost_reduction": -0.18436578171091456
   }
 }
