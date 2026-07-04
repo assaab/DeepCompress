@@ -64,6 +64,8 @@ dmypy.json
 .ruff_cache/
 .cache/
 .benchmarks/
+benchmarks/fixtures/ocr_colab/
+benchmarks/results/ocr_colab/
 
 # Jupyter and notebooks
 .ipynb_checkpoints/

@@ -79,3 +79,40 @@ python benchmarks/run_benchmark.py
 That older benchmark compares hand-authored compressed chunks in
 `benchmarks/datasets/synthetic_documents.json`. Use the real-data benchmark when
 you want numbers from the actual local DeepCompress code path.
+
+## Colab OCR Benchmark
+
+Use this when you want to test the main DeepSeek-OCR path instead of the
+pre-extracted text fixtures:
+
+```bash
+python benchmarks/run_ocr_colab_benchmark.py --regenerate-dataset --input-kind pdf --ocr-device cuda:0 --ocr-mode small --dtoon-mode raw
+```
+
+Outputs:
+
+- `benchmarks/results/ocr_colab/ocr_colab_results.json`
+- `benchmarks/results/ocr_colab/ocr_colab_results.md`
+- `benchmarks/results/ocr_colab/ocr_tokens.png`
+- `benchmarks/results/ocr_colab/ocr_compression_ratio.png`
+- `benchmarks/results/ocr_colab/ocr_fact_recall.png`
+
+Recommended Colab setup:
+
+```bash
+apt-get update && apt-get install -y poppler-utils
+pip install -e ".[gpu,llm]"
+```
+
+The benchmark generates synthetic multi-page PDFs and PNG page images under
+`benchmarks/fixtures/ocr_colab/`, runs `DocumentCompressor`, and compares:
+
+- full OCR text tokens vs compressed D-TOON tokens
+- compression ratio and tokens saved
+- exact-fact recall in OCR output
+- exact-fact recall after compression
+- per-document runtime
+
+Use `--input-kind images` if PDF conversion is unavailable. Use `--dtoon-mode
+rag` or `structured` to test LLM-assisted compression with your `.env` provider
+settings.
