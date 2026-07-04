@@ -208,4 +208,4 @@ coverage/
 *.bak
 *.tmp
 *.orig
-.tests/
+tests/
