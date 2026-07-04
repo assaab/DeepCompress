@@ -71,6 +71,7 @@ benchmarks/results/ocr_colab/
 .ipynb_checkpoints/
 *.ipynb
 !benchmarks/ocr_colab_benchmark.ipynb
+!benchmarks/ocr_colab.ipynb
 
 # Environment variables, secrets, and credentials
 .env

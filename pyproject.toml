@@ -42,8 +42,8 @@ dependencies = [
 [project.optional-dependencies]
 gpu = [
     "torch>=2.0.0,<3.0.0",  # Support torch 2.x including 2.8.0+
-    "transformers>=4.38.0,<5.0.0",  # Flexible range for compatibility
-    "tokenizers>=0.19.0,<1.0.0",  # Flexible range
+    "transformers>=4.38.0,<=4.44.2",  # DeepSeek-OCR remote code relies on pre-4.45 Llama internals
+    "tokenizers>=0.19.0,<0.20.0",  # Keep compatible with transformers<=4.44.2
     "pillow>=10.0.0",
     "pdf2image>=1.17.0",
     "accelerate>=0.20.0",
@@ -52,8 +52,9 @@ gpu = [
     "tqdm>=4.65.0",  # Progress bars for batch processing
 ]
 colab = [
-    # Lightweight extra for Google Colab (uses pre-installed torch/transformers)
-    "tokenizers>=0.19.0,<1.0.0",
+    # Lightweight extra for Google Colab (uses pre-installed torch)
+    "transformers>=4.38.0,<=4.44.2",
+    "tokenizers>=0.19.0,<0.20.0",
     "pillow>=10.0.0",
     "pdf2image>=1.17.0",
     "accelerate>=0.20.0",

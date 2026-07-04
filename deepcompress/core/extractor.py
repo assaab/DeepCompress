@@ -29,6 +29,7 @@ class OCRExtractor:
         self._model: Any = None
         self._tokenizer: Any = None
         self._device: str = config.ocr_device
+        self._hf_cache_repair_attempted = False
 
     async def initialize(self) -> None:
         """
@@ -165,7 +166,33 @@ class OCRExtractor:
                 details={"error": error_msg},
             )
         except Exception as e:
+            import logging
+
+            logger = logging.getLogger(__name__)
             error_msg = str(e)
+
+            if (
+                self.config.ocr_repair_hf_cache
+                and not self._hf_cache_repair_attempted
+                and self._is_repairable_model_cache_error(error_msg)
+            ):
+                self._hf_cache_repair_attempted = True
+                logger.warning(
+                    "DeepSeek-OCR model load looks like a corrupted or stale "
+                    "Hugging Face cache. Clearing cached files for %s and "
+                    "retrying once.",
+                    self.config.ocr_model,
+                )
+                cleared_paths = self._clear_huggingface_model_cache()
+                if cleared_paths:
+                    logger.info("Cleared Hugging Face cache paths: %s", cleared_paths)
+                else:
+                    logger.info("No existing Hugging Face cache paths found to clear")
+                self._model = None
+                self._tokenizer = None
+                await self.initialize()
+                return
+
             logger.error(f"Failed to initialize OCR model on {self._device}: {error_msg}")
 
             # Try fallback to CPU if CUDA failed
@@ -868,6 +895,62 @@ class OCRExtractor:
             Document ID (hash of file path)
         """
         return hashlib.sha256(file_path.encode()).hexdigest()[:16]
+
+    def _is_repairable_model_cache_error(self, error_msg: str) -> bool:
+        """Return True for known Hugging Face cache/remote-code load failures."""
+        lowered = error_msg.lower()
+        markers = [
+            "modelwrapper",
+            "transformers_modules",
+            "no such file or directory",
+            "does not appear to have a file named",
+            "couldn't find",
+            "could not locate",
+            "corrupt",
+            "incomplete",
+            "snapshot",
+        ]
+        return any(marker in lowered for marker in markers)
+
+    def _clear_huggingface_model_cache(self) -> list[str]:
+        """Clear only the configured model's Hugging Face hub/module cache."""
+        import os
+        import shutil
+
+        model_id = self.config.ocr_model.strip("/")
+        if "/" not in model_id:
+            return []
+
+        org, name = model_id.split("/", 1)
+        hub_cache_name = f"models--{org}--{name}"
+        cleared_paths: list[str] = []
+
+        hf_home = Path(os.getenv("HF_HOME", Path.home() / ".cache" / "huggingface"))
+        candidate_paths = [
+            Path(os.getenv("HUGGINGFACE_HUB_CACHE", hf_home / "hub")) / hub_cache_name,
+            Path(os.getenv("TRANSFORMERS_CACHE", hf_home / "hub")) / hub_cache_name,
+            hf_home / "hub" / hub_cache_name,
+        ]
+
+        modules_root = Path(os.getenv("HF_MODULES_CACHE", hf_home / "modules"))
+        candidate_paths.extend(
+            [
+                modules_root / "transformers_modules" / org / name,
+                modules_root / "transformers_modules" / org,
+            ]
+        )
+
+        for path in dict.fromkeys(candidate_paths):
+            try:
+                resolved = path.expanduser().resolve()
+            except OSError:
+                continue
+            if not resolved.exists():
+                continue
+            shutil.rmtree(resolved, ignore_errors=True)
+            cleared_paths.append(str(resolved))
+
+        return cleared_paths
 
     def _apply_transformers_compatibility_patch(self) -> None:
         """

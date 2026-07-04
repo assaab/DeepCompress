@@ -95,6 +95,10 @@ class DeepCompressConfig(BaseSettings):
         ge=0,
         description="Minimum text length for a page to be considered valid post-OCR. Pages with fewer characters will be warned about but not failed.",
     )
+    ocr_repair_hf_cache: bool = Field(
+        default=True,
+        description="Clear this model's Hugging Face cache and retry once on known corrupted-cache load errors.",
+    )
 
     # Cache Configuration
     cache_url: str = Field(
