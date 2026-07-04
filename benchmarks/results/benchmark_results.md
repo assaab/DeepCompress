@@ -6,5 +6,5 @@
 | Retrieval hit rate | 100% | 100% |
 | Citation correctness | 100% | 100% |
 | Exact values preserved | 100% | 95% |
-| Latency | 8.15 ms | 9.80 ms |
+| Latency | 8.12 ms | 6.01 ms |
 | Cost reduction | baseline | 22.1% |

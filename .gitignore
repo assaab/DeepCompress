@@ -209,6 +209,4 @@ coverage/
 *.tmp
 *.orig
 tests/*
-!tests/conftest.py
-!tests/test_pii_and_cost.py
-!tests/test_protected_facts.py
+

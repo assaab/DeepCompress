@@ -1,0 +1,246 @@
+{
+  "benchmark": "real_data",
+  "library_source": "local_repo",
+  "dtoon_mode": "raw",
+  "model": "gpt-4o",
+  "documents": [
+    {
+      "document_id": "loan_application",
+      "source_file": "C:\\Users\\amjad\\Desktop\\EDC\\benchmarks\\fixtures\\real\\loan_application.txt",
+      "original_tokens": 413,
+      "compressed_tokens": 440,
+      "compression_ratio": 0.939,
+      "processing_time_ms": 13.88,
+      "chunk_count": 4
+    },
+    {
+      "document_id": "services_agreement",
+      "source_file": "C:\\Users\\amjad\\Desktop\\EDC\\benchmarks\\fixtures\\real\\services_agreement.txt",
+      "original_tokens": 256,
+      "compressed_tokens": 280,
+      "compression_ratio": 0.914,
+      "processing_time_ms": 4.23,
+      "chunk_count": 3
+    }
+  ],
+  "modes": [
+    {
+      "mode": "full_text",
+      "tokens": 678,
+      "cost_usd": 0.007797,
+      "answer_accuracy": 1.0,
+      "retrieval_hit_rate": 1.0,
+      "citation_correctness": 1.0,
+      "exact_values_preserved": 1.0,
+      "latency_ms": 7.926700000098208,
+      "questions": [
+        {
+          "question_id": "loan-income",
+          "document_id": "loan_application",
+          "answer": "[p2] INCOME SUMMARY AND SUPPORTING DETAILS\nSection 2.1 Payroll and W-2 income.\nThe applicant reports verified payroll income of $17,000 per month from Analytical Engines LLC.\nSection 2.2 Self-employment and freelance income.\nThe applicant reports freelance consulting income of $3,200 per month from independent contracts.\nSection 2.3 Combined income total.\nAfter reviewing payroll stubs and freelance invoices, total monthly income is $20,200.\nThe applicant provided supporting income documentation for each income source listed above.",
+          "retrieved_pages": [
+            1,
+            2,
+            4
+          ],
+          "cited_pages": [
+            2
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.16799999957584077,
+          "tokens_used": 570
+        },
+        {
+          "question_id": "loan-debt",
+          "document_id": "loan_application",
+          "answer": "[p3] MONTHLY DEBT OBLIGATIONS\nSection 3.1 Installment debt.\nAutomobile loan monthly payment reported as $420 per month.\nSection 3.2 Revolving debt.\nCredit card minimum monthly payment reported as $180 per month.\nSection 3.3 Total monthly debt.\nCombined recurring monthly debt obligations total $600 per month.\nUnderwriter note: debt figures were taken from the most recent credit report pull.",
+          "retrieved_pages": [
+            1,
+            2,
+            3
+          ],
+          "cited_pages": [
+            3
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.1421999995727674,
+          "tokens_used": 527
+        },
+        {
+          "question_id": "loan-decision",
+          "document_id": "loan_application",
+          "answer": "[p4] UNDERWRITING DECISION MEMO\nDebt-to-income ratio calculated at 2.97 percent based on verified income and debt.\nApplicant credit score from bureau file: 740.\nRecommended underwriting action: approve subject to standard closing conditions.\nThis memo summarizes findings from the loan application packet dated 2026-03-15.",
+          "retrieved_pages": [
+            2,
+            3,
+            4
+          ],
+          "cited_pages": [
+            4
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 0.5,
+          "latency_ms": 0.1357000001007691,
+          "tokens_used": 513
+        },
+        {
+          "question_id": "contract-payment",
+          "document_id": "services_agreement",
+          "answer": "[p2] PAYMENT TERMS AND BILLING\nMonthly recurring service fee: $8,500.\nInvoices are payable under net 30 payment terms from invoice date.\nLate payments accrue a finance charge of 1.5% per month on unpaid balances.\nVendor billing contact: billing@northwind.example.com.\nCustomer accounts payable contact: ap@contoso.example.com.",
+          "retrieved_pages": [
+            1,
+            2,
+            3
+          ],
+          "cited_pages": [
+            2
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.15840000014577527,
+          "tokens_used": 355
+        },
+        {
+          "question_id": "contract-termination",
+          "document_id": "services_agreement",
+          "answer": "[p3] TERMINATION AND REMEDIES\nEither party may terminate this agreement for material breach.\nThe non-breaching party must provide 30 days written notice of the material breach.\nTermination for material breach is permitted only if the breach remains uncured after notice.\nConfidential information must remain protected through termination and for 12 months thereafter.",
+          "retrieved_pages": [
+            1,
+            2,
+            3
+          ],
+          "cited_pages": [
+            3
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.10449999990669312,
+          "tokens_used": 368
+        }
+      ]
+    },
+    {
+      "mode": "deepcompress_rag",
+      "tokens": 678,
+      "cost_usd": 0.007797,
+      "answer_accuracy": 1.0,
+      "retrieval_hit_rate": 1.0,
+      "citation_correctness": 1.0,
+      "exact_values_preserved": 1.0,
+      "latency_ms": 7.405000000289874,
+      "questions": [
+        {
+          "question_id": "loan-income",
+          "document_id": "loan_application",
+          "answer": "[p2] INCOME SUMMARY AND SUPPORTING DETAILS\nSection 2.1 Payroll and W-2 income.\nThe applicant reports verified payroll income of $17,000 per month from Analytical Engines LLC.\nSection 2.2 Self-employment and freelance income.\nThe applicant reports freelance consulting income of $3,200 per month from independent contracts.\nSection 2.3 Combined income total.\nAfter reviewing payroll stubs and freelance invoices, total monthly income is $20,200.\nThe applicant provided supporting income documentation for each income source listed above.",
+          "retrieved_pages": [
+            1,
+            2,
+            4
+          ],
+          "cited_pages": [
+            2
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.147800000377174,
+          "tokens_used": 570
+        },
+        {
+          "question_id": "loan-debt",
+          "document_id": "loan_application",
+          "answer": "[p3] MONTHLY DEBT OBLIGATIONS\nSection 3.1 Installment debt.\nAutomobile loan monthly payment reported as $420 per month.\nSection 3.2 Revolving debt.\nCredit card minimum monthly payment reported as $180 per month.\nSection 3.3 Total monthly debt.\nCombined recurring monthly debt obligations total $600 per month.\nUnderwriter note: debt figures were taken from the most recent credit report pull.",
+          "retrieved_pages": [
+            1,
+            2,
+            3
+          ],
+          "cited_pages": [
+            3
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.1326000001427019,
+          "tokens_used": 527
+        },
+        {
+          "question_id": "loan-decision",
+          "document_id": "loan_application",
+          "answer": "[p4] UNDERWRITING DECISION MEMO\nDebt-to-income ratio calculated at 2.97 percent based on verified income and debt.\nApplicant credit score from bureau file: 740.\nRecommended underwriting action: approve subject to standard closing conditions.\nThis memo summarizes findings from the loan application packet dated 2026-03-15.",
+          "retrieved_pages": [
+            2,
+            3,
+            4
+          ],
+          "cited_pages": [
+            4
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 0.5,
+          "latency_ms": 0.18309999995835824,
+          "tokens_used": 513
+        },
+        {
+          "question_id": "contract-payment",
+          "document_id": "services_agreement",
+          "answer": "[p2] PAYMENT TERMS AND BILLING\nMonthly recurring service fee: $8,500.\nInvoices are payable under net 30 payment terms from invoice date.\nLate payments accrue a finance charge of 1.5% per month on unpaid balances.\nVendor billing contact: billing@northwind.example.com.\nCustomer accounts payable contact: ap@contoso.example.com.",
+          "retrieved_pages": [
+            1,
+            2,
+            3
+          ],
+          "cited_pages": [
+            2
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.09640000007493654,
+          "tokens_used": 355
+        },
+        {
+          "question_id": "contract-termination",
+          "document_id": "services_agreement",
+          "answer": "[p3] TERMINATION AND REMEDIES\nEither party may terminate this agreement for material breach.\nThe non-breaching party must provide 30 days written notice of the material breach.\nTermination for material breach is permitted only if the breach remains uncured after notice.\nConfidential information must remain protected through termination and for 12 months thereafter.",
+          "retrieved_pages": [
+            1,
+            2,
+            3
+          ],
+          "cited_pages": [
+            3
+          ],
+          "answer_accuracy": 1.0,
+          "retrieval_hit": 1.0,
+          "citation_correct": 1.0,
+          "exact_value_preservation": 1.0,
+          "latency_ms": 0.09020000015880214,
+          "tokens_used": 368
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "token_reduction": 0.0,
+    "cost_reduction": 0.0
+  }
+}

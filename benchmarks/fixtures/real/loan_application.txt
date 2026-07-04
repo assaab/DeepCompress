@@ -1,0 +1,36 @@
+[p1]
+LOAN APPLICATION PACKET
+Prepared for underwriting review on March 15, 2026.
+Applicant full legal name: Ada Lovelace.
+Applicant email address on file: ada@example.com.
+Application reference number: APP-2026-001.
+Primary employer listed on the application: Analytical Engines LLC.
+Length of employment with current employer: 5 years.
+The applicant attests that all information provided in this packet is accurate.
+
+[p2]
+INCOME SUMMARY AND SUPPORTING DETAILS
+Section 2.1 Payroll and W-2 income.
+The applicant reports verified payroll income of $17,000 per month from Analytical Engines LLC.
+Section 2.2 Self-employment and freelance income.
+The applicant reports freelance consulting income of $3,200 per month from independent contracts.
+Section 2.3 Combined income total.
+After reviewing payroll stubs and freelance invoices, total monthly income is $20,200.
+The applicant provided supporting income documentation for each income source listed above.
+
+[p3]
+MONTHLY DEBT OBLIGATIONS
+Section 3.1 Installment debt.
+Automobile loan monthly payment reported as $420 per month.
+Section 3.2 Revolving debt.
+Credit card minimum monthly payment reported as $180 per month.
+Section 3.3 Total monthly debt.
+Combined recurring monthly debt obligations total $600 per month.
+Underwriter note: debt figures were taken from the most recent credit report pull.
+
+[p4]
+UNDERWRITING DECISION MEMO
+Debt-to-income ratio calculated at 2.97 percent based on verified income and debt.
+Applicant credit score from bureau file: 740.
+Recommended underwriting action: approve subject to standard closing conditions.
+This memo summarizes findings from the loan application packet dated 2026-03-15.

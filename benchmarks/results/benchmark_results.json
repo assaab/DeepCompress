@@ -9,7 +9,7 @@
       "retrieval_hit_rate": 1.0,
       "citation_correctness": 1.0,
       "exact_values_preserved": 1.0,
-      "latency_ms": 8.14619999982824,
+      "latency_ms": 8.116900000459282,
       "questions": [
         {
           "question_id": "loan-income",
@@ -27,7 +27,7 @@
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.19489999976940453,
+          "latency_ms": 0.31089999993128004,
           "tokens_used": 166
         },
         {
@@ -46,7 +46,7 @@
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.10939999992842786,
+          "latency_ms": 0.12139999944338342,
           "tokens_used": 160
         },
         {
@@ -65,7 +65,7 @@
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.10399999973742524,
+          "latency_ms": 0.08509999952366343,
           "tokens_used": 126
         },
         {
@@ -82,7 +82,7 @@
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.10589999965304742,
+          "latency_ms": 0.05580000015470432,
           "tokens_used": 137
         }
       ]
@@ -95,7 +95,7 @@
       "retrieval_hit_rate": 1.0,
       "citation_correctness": 1.0,
       "exact_values_preserved": 0.95,
-      "latency_ms": 9.804799999983516,
+      "latency_ms": 6.012099999679776,
       "questions": [
         {
           "question_id": "loan-income",
@@ -113,7 +113,7 @@
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.1554000000396627,
+          "latency_ms": 0.06829999983892776,
           "tokens_used": 128
         },
         {
@@ -132,7 +132,7 @@
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.09779999982129084,
+          "latency_ms": 0.05830000009154901,
           "tokens_used": 122
         },
         {
@@ -151,7 +151,7 @@
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.17519999983051093,
+          "latency_ms": 0.053699999625678174,
           "tokens_used": 109
         },
         {
@@ -169,7 +169,7 @@
           "retrieval_hit": 1.0,
           "citation_correct": 1.0,
           "exact_value_preservation": 1.0,
-          "latency_ms": 0.08140000045386842,
+          "latency_ms": 0.05030000011174707,
           "tokens_used": 111
         }
       ]

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "loan-income",
+    "document_id": "loan_application",
+    "question": "What is the applicant's total monthly income and where is it mentioned?",
+    "expected_answer_terms": ["$20,200"],
+    "expected_values": ["$17,000", "$3,200", "$20,200"],
+    "expected_pages": [2]
+  },
+  {
+    "id": "loan-debt",
+    "document_id": "loan_application",
+    "question": "What is the applicant's total monthly debt?",
+    "expected_answer_terms": ["$600"],
+    "expected_values": ["$420", "$180", "$600"],
+    "expected_pages": [3]
+  },
+  {
+    "id": "loan-decision",
+    "document_id": "loan_application",
+    "question": "What credit score and debt-to-income ratio were recorded?",
+    "expected_answer_terms": ["740", "2.97"],
+    "expected_values": ["740", "2.97%"],
+    "expected_pages": [4]
+  },
+  {
+    "id": "contract-payment",
+    "document_id": "services_agreement",
+    "question": "What is the monthly service fee and invoice due date?",
+    "expected_answer_terms": ["$8,500", "net 30"],
+    "expected_values": ["$8,500", "net 30"],
+    "expected_pages": [2]
+  },
+  {
+    "id": "contract-termination",
+    "document_id": "services_agreement",
+    "question": "What notice is required before terminating for material breach?",
+    "expected_answer_terms": ["30 days"],
+    "expected_values": ["30 days"],
+    "expected_pages": [3]
+  }
+]

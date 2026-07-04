@@ -1,0 +1,22 @@
+[p1]
+SERVICES AGREEMENT
+Agreement identifier: SA-7781.
+This Services Agreement is entered into between Contoso Ltd. and Northwind LLC.
+Effective date of this agreement: 2026-03-15.
+Initial contract term: 24 months from the effective date unless terminated earlier.
+Both parties acknowledge receipt of the signed counterpart of this agreement.
+
+[p2]
+PAYMENT TERMS AND BILLING
+Monthly recurring service fee: $8,500.
+Invoices are payable under net 30 payment terms from invoice date.
+Late payments accrue a finance charge of 1.5% per month on unpaid balances.
+Vendor billing contact: billing@northwind.example.com.
+Customer accounts payable contact: ap@contoso.example.com.
+
+[p3]
+TERMINATION AND REMEDIES
+Either party may terminate this agreement for material breach.
+The non-breaching party must provide 30 days written notice of the material breach.
+Termination for material breach is permitted only if the breach remains uncured after notice.
+Confidential information must remain protected through termination and for 12 months thereafter.
