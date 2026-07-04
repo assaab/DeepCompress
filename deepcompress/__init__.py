@@ -32,7 +32,7 @@ from deepcompress.processing.batch import BatchProcessor
 from deepcompress.processing.protected_facts import extract_protected_facts
 from deepcompress.utils.cost import calculate_savings
 
-__version__ = "1.4.7"
+__version__ = "1.4.8"
 __author__ = "DeepCompress Contributors"
 __license__ = "MIT"
 

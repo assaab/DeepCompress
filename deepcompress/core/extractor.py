@@ -68,6 +68,7 @@ class OCRExtractor:
                 self.config.ocr_model,
                 revision=self.config.ocr_model_revision,
                 trust_remote_code=True,
+                use_fast=self.config.ocr_use_fast_tokenizer,
             )
             
             # Configure tokenizer properly to avoid warnings
@@ -210,6 +211,7 @@ class OCRExtractor:
                         self.config.ocr_model,
                         revision=self.config.ocr_model_revision,
                         trust_remote_code=True,
+                        use_fast=self.config.ocr_use_fast_tokenizer,
                     )
 
                     if self._tokenizer.pad_token is None:

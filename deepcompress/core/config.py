@@ -99,6 +99,10 @@ class DeepCompressConfig(BaseSettings):
         default=True,
         description="Clear this model's Hugging Face cache and retry once on known corrupted-cache load errors.",
     )
+    ocr_use_fast_tokenizer: bool = Field(
+        default=False,
+        description="Use Hugging Face fast tokenizer for OCR. Keep disabled for DeepSeek-OCR to avoid tokenizer.json ModelWrapper parse errors.",
+    )
 
     # Cache Configuration
     cache_url: str = Field(
